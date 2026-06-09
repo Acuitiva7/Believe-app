@@ -1,0 +1,6 @@
+{
+  "name": "Believe",
+  "description": "Una experiencia espiritual digital interactiva.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

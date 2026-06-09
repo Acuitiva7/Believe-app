@@ -1,0 +1,108 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Montserrat", "Helvetica Neue", Arial, sans-serif;
+  --font-serif: "Montserrat", Georgia, serif;
+
+  --color-brand-1: #f3005a;
+  --color-brand-2: #ff763a;
+  --color-brand-3: #ffc233;
+  --color-brand-4: #fff282;
+  --color-brand-5: #d2fce0;
+
+  --color-belief-blue: var(--theme-bg);
+  --color-belief-gold: var(--theme-primary);
+  --color-belief-white: var(--theme-text);
+  
+  --color-border-theme: var(--theme-border);
+}
+
+:root {
+  --theme-bg: #ffffff;
+  --theme-text: #1a1a1a;
+  --theme-primary: #ff763a;
+  --theme-card-bg: rgba(255, 255, 255, 0.7);
+  --theme-border: rgba(0, 0, 0, 0.1);
+  --theme-input-bg: rgba(0, 0, 0, 0.05);
+}
+
+.dark {
+  --theme-bg: #121212;
+  --theme-text: #fafafa;
+  --theme-primary: #f3005a;
+  --theme-card-bg: rgba(0, 0, 0, 0.5);
+  --theme-border: rgba(255, 255, 255, 0.1);
+  --theme-input-bg: rgba(255, 255, 255, 0.05);
+}
+
+body {
+  @apply bg-belief-blue text-belief-white font-serif overflow-x-hidden antialiased transition-colors duration-500;
+}
+
+/* Glass panel adjustments for light/dark */
+.glass-panel {
+  background: var(--theme-card-bg);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--theme-border);
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+  transition: background-color 0.5s, border-color 0.5s, box-shadow 0.5s;
+}
+
+.dark .glass-panel {
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+}
+
+.glass-panel-hover {
+  @apply hover:border-brand-2 transition-colors duration-300;
+}
+
+/* Gradients */
+.bg-gradient-mesh {
+  position: fixed;
+  inset: 0;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(243, 0, 90, 0.1) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(255, 118, 58, 0.1) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(255, 194, 51, 0.15) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(210, 252, 224, 0.4) 0px, transparent 50%);
+  z-index: -2;
+  transition: background-image 0.5s;
+}
+
+.dark .bg-gradient-mesh {
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(243, 0, 90, 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(255, 118, 58, 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(255, 194, 51, 0.15) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(210, 252, 224, 0.1) 0px, transparent 50%);
+}
+
+.net-overlay {
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(var(--theme-border) 1px, transparent 1px);
+  background-size: 40px 40px;
+  z-index: -1;
+  transition: opacity 0.5s;
+}
+
+/* Specific overriding of manual hardcoded colors */
+.bg-black\/20, .bg-transparent, .bg-\[\#1c203b\]\/90 {
+  background-color: var(--theme-input-bg) !important;
+}
+
+.border-white\/5, .border-white\/10, .border-white\/20, .border-black\/20 {
+  border-color: var(--theme-border) !important;
+}
+
+/* Make sure text elements that used black inherit properly in light mode */
+.text-belief-blue {
+  color: var(--theme-bg) !important; /* Retained logic that it contrasted with the button */
+}
+
+/* For primary buttons to remain readable */
+button.bg-belief-gold {
+  color: #ffffff !important;
+}
