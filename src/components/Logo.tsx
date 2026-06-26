@@ -2,7 +2,7 @@ import { motion } from 'motion/react';
 import { useState } from 'react';
 
 export function Logo({ className }: { className?: string }) {
-  const [imgSrc, setImgSrc] = useState('/logo.svg');
+  const [imgSrc, setImgSrc] = useState('/logo.png');
 
   return (
     <motion.div 
@@ -47,12 +47,6 @@ export function Logo({ className }: { className?: string }) {
             ]
           }}
           transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-          onError={() => {
-            // Intenta cargar PNG si SVG falla
-            if (imgSrc === '/logo.svg') {
-              setImgSrc('/logo.png');
-            }
-          }}
         />
       </div>
     </motion.div>

@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Users, Calendar, Bell, Search, MapPin, Heart, MessageCircle, 
-  ChevronRight, Compass, ShieldAlert, ImagePlus, Send, Check, Trash2, Globe, Sparkles 
+  ChevronRight, Compass, ShieldAlert, ImagePlus, Send, Check, Trash2, Globe, Sparkles, Settings, HandHeart
 } from 'lucide-react';
 import { 
   getLocalAnnouncements, saveLocalAnnouncements, addLocalAnnouncement, 
   getLocalChurches, addLocalChurch, saveLocalChurches, Announcement, Church 
 } from '../data';
 import { Journal } from './Journal';
+import { getUserRole } from '../lib/roles';
 
 export function UserDashboard({ user }: { user?: any }) {
   const userId = user?.email || 'default';
@@ -97,32 +98,48 @@ export function UserDashboard({ user }: { user?: any }) {
   return (
     <div className="min-h-screen pt-32 px-4 pb-24 bg-slate-50 text-slate-800 font-sans">
       <div className="max-w-6xl mx-auto">
-        {/* Tab Selector */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex justify-center mb-10">
-          <div className="bg-white p-1.5 inline-flex rounded-full border border-slate-200 shadow-sm">
+        {/* Header and Tab Selector aligned left */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4 border-b border-slate-200 pb-6">
+          <div>
+            <h1 className="font-serif text-3xl font-bold text-slate-900 tracking-tight">
+              {activeTab === 'descubrir' && 'Explora Believe'}
+              {activeTab === 'comunidad' && 'Tu Comunidad'}
+              {activeTab === 'diario' && 'Diario Espiritual'}
+            </h1>
+            <p className="text-sm text-slate-500 mt-1 font-sans">
+              {activeTab === 'descubrir' && 'Descubre iglesias y contenido global'}
+              {activeTab === 'comunidad' && 'Conecta con tu congregación local'}
+              {activeTab === 'diario' && 'Un espacio íntimo para hablar con Dios cada día'}
+            </p>
+          </div>
+          
+          <div className="bg-slate-100/80 p-1.5 inline-flex rounded-2xl shadow-inner w-full md:w-auto overflow-x-auto no-scrollbar border border-slate-200/50">
             <button
               onClick={() => setActiveTab('descubrir')}
-              className={`px-6 py-2.5 rounded-full text-xs font-semibold uppercase tracking-widest transition-all ${
-                activeTab === 'descubrir' ? 'bg-primary text-white shadow-md' : 'text-slate-500 hover:text-slate-800 cursor-pointer'
+              className={`px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all whitespace-nowrap ${
+                activeTab === 'descubrir' ? 'bg-white text-brand-1 shadow-sm border border-slate-200/50' : 'text-slate-500 hover:text-slate-800 cursor-pointer hover:bg-slate-200/50'
               }`}
             >
-              <span className="flex items-center gap-2"><Compass className="w-4 h-4" /> Global</span>
+              <span className="flex items-center justify-center gap-2"><Compass className="w-4 h-4" /> Global</span>
             </button>
             <button
               onClick={() => setActiveTab('comunidad')}
-              className={`px-6 py-2.5 rounded-full text-xs font-semibold uppercase tracking-widest transition-all cursor-pointer ${
-                activeTab === 'comunidad' ? 'bg-primary text-white shadow-md' : 'text-slate-500 hover:text-slate-800 cursor-pointer'
+              className={`px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all whitespace-nowrap ${
+                activeTab === 'comunidad' ? 'bg-white text-brand-1 shadow-sm border border-slate-200/50' : 'text-slate-500 hover:text-slate-800 cursor-pointer hover:bg-slate-200/50'
               }`}
             >
-              <span className="flex items-center gap-2"><Users className="w-4 h-4" /> Comunidad</span>
+              <span className="flex items-center justify-center gap-2"><Users className="w-4 h-4" /> Comunidad</span>
             </button>
             <button
               onClick={() => setActiveTab('diario')}
-              className={`px-6 py-2.5 rounded-full text-xs font-semibold uppercase tracking-widest transition-all cursor-pointer ${
-                activeTab === 'diario' ? 'bg-primary text-white shadow-md' : 'text-slate-500 hover:text-slate-800 cursor-pointer'
+              className={`px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all whitespace-nowrap ${
+                activeTab === 'diario' ? 'bg-white text-brand-1 shadow-sm border border-slate-200/50' : 'text-slate-500 hover:text-slate-800 cursor-pointer hover:bg-slate-200/50'
               }`}
             >
-              <span className="flex items-center gap-2"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg> Diario</span>
+              <span className="flex items-center justify-center gap-2">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg> 
+                Diario
+              </span>
             </button>
           </div>
         </motion.div>
@@ -349,7 +366,61 @@ export function UserDashboard({ user }: { user?: any }) {
                         <span className="text-xs text-blue-600 font-semibold uppercase tracking-wide">Comunidad Activa:</span>
                         <div className="text-slate-900 font-serif text-lg font-bold mt-1">{linkedChurch}</div>
                       </div>
-                      <button onClick={handleLeaveChurch} className="text-xs bg-white border border-slate-200 px-4 py-2 rounded-xl font-semibold text-slate-600 hover:text-red-500 hover:border-red-500/50 transition-colors shadow-sm">Cambiar iglesia</button>
+                      <button onClick={handleLeaveChurch} className="text-xs bg-white border border-slate-200 px-4 py-2 rounded-xl font-semibold text-slate-600 hover:text-red-500 hover:border-red-500/50 transition-colors shadow-sm cursor-pointer">Cambiar iglesia</button>
+                    </div>
+
+                    <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm mb-6 relative overflow-hidden group">
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-rose-50 rounded-full blur-2xl -mr-10 -mt-10"></div>
+                      <h3 className="font-serif text-xl mb-4 text-slate-900 font-bold relative z-10 flex items-center gap-2"><HandHeart className="w-5 h-5 text-rose-500" /> Pedir Oración</h3>
+                      <div className="relative z-10 flex gap-3">
+                        <input 
+                          type="text" 
+                          placeholder="¿Por qué o quién oramos? Escribe tu petición a la iglesia..."
+                          className="w-full bg-slate-50 border border-slate-200 rounded-full py-3 px-6 text-sm focus:outline-none focus:ring-2 focus:ring-rose-200 transition-shadow"
+                          id="prayerInput"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              const el = e.target as HTMLInputElement;
+                              if (el.value.trim()) {
+                                addLocalAnnouncement({
+                                  title: 'Petición de Oración',
+                                  content: el.value,
+                                  category: 'local',
+                                  churchName: linkedChurch,
+                                  author: user?.email?.split('@')[0] || 'Miembro',
+                                  date: 'Ahora mismo',
+                                  prayers: 0
+                                });
+                                el.value = '';
+                                setAnnouncements(getLocalAnnouncements());
+                                alert('Petición compartida con la comunidad');
+                              }
+                            }
+                          }}
+                        />
+                        <button 
+                          onClick={() => {
+                            const el = document.getElementById('prayerInput') as HTMLInputElement;
+                            if (el.value.trim()) {
+                              addLocalAnnouncement({
+                                title: 'Petición de Oración',
+                                content: el.value,
+                                category: 'local',
+                                churchName: linkedChurch,
+                                author: user?.email?.split('@')[0] || 'Miembro',
+                                date: 'Ahora mismo',
+                                prayers: 0
+                              });
+                              el.value = '';
+                              setAnnouncements(getLocalAnnouncements());
+                              alert('Petición compartida con la comunidad');
+                            }
+                          }}
+                          className="px-6 py-3 bg-rose-500 hover:bg-rose-600 text-white font-bold text-sm rounded-full transition-colors shrink-0 shadow-sm cursor-pointer"
+                        >
+                          Enviar
+                        </button>
+                      </div>
                     </div>
 
                     {localAnnouncements.length > 0 ? (
@@ -451,7 +522,7 @@ export function UserDashboard({ user }: { user?: any }) {
 
           {activeTab === 'diario' && (
             <motion.div key="diario" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-              <div className="-mt-24">
+              <div>
                 <Journal userId={userId} />
               </div>
             </motion.div>
@@ -565,6 +636,9 @@ export function UserDashboard({ user }: { user?: any }) {
 }
 
 export function AdminDashboard({ user }: { user?: any }) {
+  const role = getUserRole(user?.email);
+  const isPastor = role === 'pastor';
+  
   const userPendingKey = 'belief-pastor-pending-' + (user?.email || 'default');
   const userApprovedKey = 'belief-pastor-approved-' + (user?.email || 'default');
   
@@ -615,17 +689,31 @@ export function AdminDashboard({ user }: { user?: any }) {
   };
 
   const [showEventForm, setShowEventForm] = useState(false);
+  const [showCellForm, setShowCellForm] = useState(false);
+  const [showConfigForm, setShowConfigForm] = useState(false);
   const [localChurchName, setLocalChurchName] = useState(() => localStorage.getItem('belief-linked-church') || 'Centro Cristiano Vida');
   const [pushedOk, setPushedOk] = useState(false);
 
   // Form Fields
   const [postTitle, setPostTitle] = useState('');
   const [postContent, setPostContent] = useState('');
-  const [postAuthor, setPostAuthor] = useState('Pastor de la Comunidad');
+  const [postAuthor, setPostAuthor] = useState(isPastor ? 'Pastor de la Comunidad' : 'Líder Ministerio');
+
+  // New Cell fields
+  const [cellName, setCellName] = useState('');
+  const [cellLeader, setCellLeader] = useState('');
 
   // Stats
   const [localMembersCount, setLocalMembersCount] = useState(1245);
-  const [prayersCount, setPrayersCount] = useState(89);
+  const allAnns = getLocalAnnouncements();
+  const prayersCount = allAnns.filter(a => a.churchName === (isApproved || localChurchName) && a.title === 'Petición de Oración').length;
+  const [cells, setCells] = useState<{name: string, leader: string}[]>(() => {
+    try {
+      const stored = localStorage.getItem(`belief-cells-${isApproved || localChurchName}`);
+      return stored ? JSON.parse(stored) : [{name: 'Jóvenes con Propósito', leader: 'David'}, {name: 'Ministerio de Mujeres', leader: 'Ana'}];
+    } catch { return [{name: 'Jóvenes con Propósito', leader: 'David'}]; }
+  });
+  const cellsCount = cells.length;
 
   const handlePostLocalSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -649,12 +737,25 @@ export function AdminDashboard({ user }: { user?: any }) {
     }, 2500);
   };
 
+  const handleCellSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!cellName.trim()) return;
+    
+    const updated = [...cells, { name: cellName, leader: cellLeader }];
+    setCells(updated);
+    localStorage.setItem(`belief-cells-${isApproved || localChurchName}`, JSON.stringify(updated));
+    
+    setCellName('');
+    setCellLeader('');
+    setShowCellForm(false);
+    alert('Nueva célula registrada');
+  };
 
-  if (!isApproved && !isPending) {
+  if (!isApproved && !isPending && isPastor) {
     return (
       <div className="min-h-screen pt-32 px-4 pb-24 bg-slate-50 text-slate-800 flex justify-center font-sans">
-        <div className="max-w-3xl w-full bg-white p-10 rounded-3xl border-t-8 border-t-primary border border-slate-200 shadow-xl shadow-slate-200/50 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
+        <div className="max-w-3xl w-full bg-white p-10 rounded-3xl border-t-8 border-t-brand-1 border border-slate-200 shadow-xl shadow-slate-200/50 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-brand-1/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
           <h2 className="font-serif text-4xl mb-3 text-slate-900 font-bold tracking-tight">Crea tu Comunidad</h2>
           <p className="font-sans text-base text-slate-600 mb-10 leading-relaxed max-w-xl">Por favor, registra los datos oficiales de tu congregación para que sean evaluados por la administración y formen parte del directorio global.</p>
           
@@ -662,21 +763,21 @@ export function AdminDashboard({ user }: { user?: any }) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-xs uppercase tracking-widest text-slate-500 mb-2 font-bold">Nombre de la Iglesia *</label>
-                <input required type="text" value={regName} onChange={(e) => setRegName(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 px-5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-900 transition-shadow" placeholder="Ej: Iglesia Vida Nueva" />
+                <input required type="text" value={regName} onChange={(e) => setRegName(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 px-5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-1/50 text-slate-900 transition-shadow" placeholder="Ej: Iglesia Vida Nueva" />
               </div>
               <div>
                 <label className="block text-xs uppercase tracking-widest text-slate-500 mb-2 font-bold">Ciudad / País *</label>
-                <input required type="text" value={regLoc} onChange={(e) => setRegLoc(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 px-5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-900 transition-shadow" placeholder="Ej: Madrid, ES" />
+                <input required type="text" value={regLoc} onChange={(e) => setRegLoc(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 px-5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-1/50 text-slate-900 transition-shadow" placeholder="Ej: Madrid, ES" />
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-xs uppercase tracking-widest text-slate-500 mb-2 font-bold">Dirección Completa *</label>
-                <input required type="text" value={regAddress} onChange={(e) => setRegAddress(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 px-5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-900 transition-shadow" placeholder="Ej: Calle Mayor 12" />
+                <input required type="text" value={regAddress} onChange={(e) => setRegAddress(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 px-5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-1/50 text-slate-900 transition-shadow" placeholder="Ej: Calle Mayor 12" />
               </div>
               <div>
                 <label className="block text-xs uppercase tracking-widest text-slate-500 mb-2 font-bold">Pastores / Líderes Principales *</label>
-                <input required type="text" value={regPastors} onChange={(e) => setRegPastors(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 px-5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-900 transition-shadow" placeholder="Ej: Ps. Juan y María" />
+                <input required type="text" value={regPastors} onChange={(e) => setRegPastors(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 px-5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-1/50 text-slate-900 transition-shadow" placeholder="Ej: Ps. Juan y María" />
               </div>
             </div>
 
@@ -726,10 +827,10 @@ export function AdminDashboard({ user }: { user?: any }) {
     return (
       <div className="min-h-screen pt-32 px-4 pb-24 bg-slate-50 text-slate-800 flex justify-center text-center font-sans">
         <div className="max-w-xl w-full bg-white p-12 rounded-3xl border border-slate-200 shadow-xl relative overflow-hidden">
-          <div className="absolute inset-0 bg-primary/5"></div>
+          <div className="absolute inset-0 bg-brand-1/5"></div>
           <div className="relative z-10 flex flex-col items-center">
-            <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-6 ring-8 ring-white">
-              <Compass className="w-10 h-10 text-primary animate-pulse" />
+            <div className="w-20 h-20 bg-brand-1/10 rounded-full flex items-center justify-center mb-6 ring-8 ring-white">
+              <Compass className="w-10 h-10 text-brand-1 animate-pulse" />
             </div>
             <h2 className="font-serif text-3xl mb-4 text-slate-900 font-bold tracking-tight">Solicitud en Proceso</h2>
             <p className="font-sans text-base text-slate-600 mb-6 leading-relaxed">Tu congregación está siendo evaluada por la administración. Te notificaremos una vez que sea aprobada y conectada al Directorio Global de Believe.</p>
@@ -744,15 +845,27 @@ export function AdminDashboard({ user }: { user?: any }) {
       <div className="max-w-6xl mx-auto">
          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6 border-b border-slate-200 pb-8 relative">
           <div>
-            <h1 className="font-serif text-3xl md:text-4xl text-slate-900 mb-3 font-bold tracking-tight">Panel Pastoral Local</h1>
+            <h1 className="font-serif text-3xl md:text-4xl text-slate-900 mb-3 font-bold tracking-tight">
+              {isPastor ? 'Panel Pastoral Local' : 'Panel Ministerial'}
+            </h1>
             <p className="font-sans text-slate-600 text-base">
-              Administrando comunidad: <strong className="text-primary font-serif font-bold text-lg ml-1">{localChurchName}</strong>
+              Administrando comunidad: <strong className="text-brand-1 font-serif font-bold text-lg ml-1">{localChurchName}</strong>
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <button onClick={() => setShowEventForm(!showEventForm)} className={`${showEventForm ? 'bg-slate-200 text-slate-700 hover:bg-slate-300' : 'bg-primary text-white hover:bg-primary/90'} px-6 py-3.5 rounded-full text-xs uppercase tracking-widest font-bold transition-colors cursor-pointer shadow-sm flex items-center gap-2`}>
+            <button onClick={() => setShowEventForm(!showEventForm)} className={`${showEventForm ? 'bg-slate-200 text-slate-700 hover:bg-slate-300' : 'bg-brand-1 text-white hover:bg-brand-2'} px-6 py-3.5 rounded-full text-xs uppercase tracking-widest font-bold transition-colors cursor-pointer shadow-sm flex items-center gap-2`}>
               {showEventForm ? '× Cancelar' : '+ Crear Anuncio / Evento'}
             </button>
+            {isPastor && (
+              <>
+                <button onClick={() => setShowCellForm(!showCellForm)} className="bg-amber-100 text-amber-700 hover:bg-amber-200 px-6 py-3.5 rounded-full text-xs uppercase tracking-widest font-bold transition-colors cursor-pointer shadow-sm">
+                  + Nueva Célula
+                </button>
+                <button onClick={() => setShowConfigForm(!showConfigForm)} className="bg-slate-100 text-slate-700 hover:bg-slate-200 px-6 py-3.5 rounded-full text-xs uppercase tracking-widest font-bold transition-colors cursor-pointer shadow-sm">
+                  Configurar Iglesia
+                </button>
+              </>
+            )}
           </div>
         </motion.div>
 
@@ -760,8 +873,8 @@ export function AdminDashboard({ user }: { user?: any }) {
           {showEventForm && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="mb-10 overflow-hidden">
               <div className="bg-white p-8 md:p-10 rounded-3xl border border-slate-200 shadow-lg relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mr-20 -mt-20"></div>
-                <h3 className="font-serif text-2xl mb-8 text-slate-900 font-bold relative z-10 flex items-center gap-3"><Send className="w-5 h-5 text-primary" /> Redactar Comunicado a la Iglesia</h3>
+                <div className="absolute top-0 right-0 w-64 h-64 bg-brand-1/5 rounded-full blur-3xl -mr-20 -mt-20"></div>
+                <h3 className="font-serif text-2xl mb-8 text-slate-900 font-bold relative z-10 flex items-center gap-3"><Send className="w-5 h-5 text-brand-1" /> Redactar Comunicado</h3>
                 
                 {pushedOk ? (
                   <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 p-5 rounded-2xl flex items-center gap-3 mb-8 font-bold text-sm tracking-wide relative z-10">
@@ -777,7 +890,7 @@ export function AdminDashboard({ user }: { user?: any }) {
                       type="text" 
                       value={postTitle}
                       onChange={(e) => setPostTitle(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 px-5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-900 transition-shadow" 
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 px-5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-1/50 text-slate-900 transition-shadow" 
                       placeholder="Ej: Gran Campaña de Solidaridad de Invierno"
                     />
                   </div>
@@ -789,7 +902,7 @@ export function AdminDashboard({ user }: { user?: any }) {
                         type="text" 
                         value={postAuthor}
                         onChange={(e) => setPostAuthor(e.target.value)}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 px-5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-900 transition-shadow" 
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 px-5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-1/50 text-slate-900 transition-shadow" 
                         placeholder="Ej: Pastor General / Liderazgo de Jóvenes"
                       />
                     </div>
@@ -810,7 +923,7 @@ export function AdminDashboard({ user }: { user?: any }) {
                       rows={5} 
                       value={postContent}
                       onChange={(e) => setPostContent(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 px-5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none text-slate-900 font-sans transition-shadow" 
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 px-5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-1/50 resize-none text-slate-900 font-sans transition-shadow" 
                       placeholder="Escribe el propósito de la publicación, cita bíblica, fechas o información importante..."
                     />
                   </div>
@@ -823,50 +936,98 @@ export function AdminDashboard({ user }: { user?: any }) {
               </div>
             </motion.div>
           )}
+
+          {showCellForm && isPastor && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="mb-10 overflow-hidden">
+               <div className="bg-white p-8 md:p-10 rounded-3xl border border-slate-200 shadow-lg relative overflow-hidden">
+                 <h3 className="font-serif text-2xl mb-8 text-slate-900 font-bold relative z-10 flex items-center gap-3"><Users className="w-5 h-5 text-amber-500" /> Crear Nueva Célula</h3>
+                 <form onSubmit={handleCellSubmit} className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-xs uppercase tracking-widest text-slate-500 mb-2 font-bold">Nombre del Grupo / Célula</label>
+                        <input required type="text" value={cellName} onChange={(e) => setCellName(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 px-5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-shadow" placeholder="Ej: Jóvenes con Propósito" />
+                      </div>
+                      <div>
+                        <label className="block text-xs uppercase tracking-widest text-slate-500 mb-2 font-bold">Líder a cargo</label>
+                        <input required type="text" value={cellLeader} onChange={(e) => setCellLeader(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 px-5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-shadow" placeholder="Nombre del líder" />
+                      </div>
+                    </div>
+                    <button type="submit" className="bg-amber-500 hover:bg-amber-600 text-white px-8 py-3 rounded-xl text-sm font-bold uppercase tracking-widest transition-colors shadow-md">
+                      Crear Célula
+                    </button>
+                 </form>
+               </div>
+            </motion.div>
+          )}
+
+          {showConfigForm && isPastor && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="mb-10 overflow-hidden">
+               <div className="bg-white p-8 md:p-10 rounded-3xl border border-slate-200 shadow-lg relative overflow-hidden">
+                 <h3 className="font-serif text-2xl mb-8 text-slate-900 font-bold relative z-10 flex items-center gap-3"><Settings className="w-5 h-5 text-slate-600" /> Configuración Pública de la Iglesia</h3>
+                 <p className="text-sm text-slate-500 mb-6">Actualiza la foto de portada, descripción y detalles que los usuarios verán en el directorio público.</p>
+                 <form onSubmit={(e) => { e.preventDefault(); alert('Configuración guardada (Simulado)'); setShowConfigForm(false); }} className="space-y-6">
+                    <div>
+                      <label className="block text-xs uppercase tracking-widest text-slate-500 mb-2 font-bold">Descripción Corta</label>
+                      <textarea rows={3} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 px-5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-1/50 transition-shadow resize-none" placeholder="Bienvenidos a nuestra comunidad..."></textarea>
+                    </div>
+                    <div className="p-6 bg-slate-50 border border-slate-200 rounded-2xl">
+                      <label className="block text-xs uppercase tracking-widest text-slate-600 mb-4 font-bold">Actualizar Banner / Portada</label>
+                      <button type="button" className="bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 px-6 py-3 rounded-xl text-xs uppercase font-bold tracking-wider transition-colors flex items-center justify-center gap-2 shadow-sm">
+                        <ImagePlus className="w-4 h-4" /> Seleccionar Imagen
+                      </button>
+                    </div>
+                    <button type="submit" className="bg-slate-900 hover:bg-slate-800 text-white px-8 py-3 rounded-xl text-sm font-bold uppercase tracking-widest transition-colors shadow-md">
+                      Guardar Cambios
+                    </button>
+                 </form>
+               </div>
+            </motion.div>
+          )}
         </AnimatePresence>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
-           <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden group">
-             <div className="absolute -right-4 -bottom-4 bg-sky-50 w-24 h-24 rounded-full group-hover:scale-125 transition-transform duration-500"></div>
-             <h4 className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-3 relative z-10">Miembros Activos</h4>
-             <div className="text-3xl sm:text-4xl font-serif text-slate-900 font-bold relative z-10">{localMembersCount}</div>
-             <p className="text-xs text-emerald-600 mt-2 font-semibold bg-emerald-50 inline-block px-2 py-1 rounded-md relative z-10">+12% este mes</p>
-           </div>
-           <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden group">
+           {isPastor && (
+             <button onClick={() => alert('Lista de miembros activos:\n- Carlos (Hace 2h)\n- María (Hace 1 día)\n... (En desarrollo)')} className="text-left bg-white p-6 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden group hover:border-slate-300 transition-colors cursor-pointer">
+               <div className="absolute -right-4 -bottom-4 bg-sky-50 w-24 h-24 rounded-full group-hover:scale-125 transition-transform duration-500"></div>
+               <h4 className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-3 relative z-10">Miembros Activos</h4>
+               <div className="text-3xl sm:text-4xl font-serif text-slate-900 font-bold relative z-10">{localMembersCount}</div>
+               <p className="text-xs text-emerald-600 mt-2 font-semibold bg-emerald-50 inline-block px-2 py-1 rounded-md relative z-10">+12% este mes</p>
+             </button>
+           )}
+           <button onClick={() => alert(`Lista de células:\n${cells.map(c => `- ${c.name} (Líder: ${c.leader})`).join('\n') || 'No hay células registradas'}`)} className="text-left bg-white p-6 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden group hover:border-slate-300 transition-colors cursor-pointer">
              <div className="absolute -right-4 -bottom-4 bg-amber-50 w-24 h-24 rounded-full group-hover:scale-125 transition-transform duration-500"></div>
              <h4 className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-3 relative z-10">Células / Grupos</h4>
-             <div className="text-3xl sm:text-4xl font-serif text-slate-900 font-bold relative z-10">24</div>
+             <div className="text-3xl sm:text-4xl font-serif text-slate-900 font-bold relative z-10">{cellsCount}</div>
              <p className="text-xs text-slate-500 mt-2 font-medium relative z-10">Activos en plataforma</p>
-           </div>
-           <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden group">
+           </button>
+           <button onClick={() => alert(`Peticiones Recientes:\n${allAnns.filter(a => a.churchName === (isApproved || localChurchName) && a.title === 'Petición de Oración').map(a => '- ' + a.content).join('\n') || 'No hay peticiones recientes'}`)} className="text-left bg-white p-6 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden group hover:border-slate-300 transition-colors cursor-pointer">
              <div className="absolute -right-4 -bottom-4 bg-rose-50 w-24 h-24 rounded-full group-hover:scale-125 transition-transform duration-500"></div>
              <h4 className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-3 relative z-10">Peticiones de Oración</h4>
              <div className="text-3xl sm:text-4xl font-serif text-slate-900 font-bold relative z-10">{prayersCount}</div>
-             <p className="text-xs text-rose-500 mt-2 font-semibold relative z-10 tracking-tight">Atención requerida</p>
-           </div>
-           <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden group">
-             <div className="absolute -right-4 -bottom-4 bg-indigo-50 w-24 h-24 rounded-full group-hover:scale-125 transition-transform duration-500"></div>
-             <h4 className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-3 relative z-10">Retención Semanal</h4>
-             <div className="text-3xl sm:text-4xl font-serif text-slate-900 font-bold relative z-10">85%</div>
-             <p className="text-xs text-slate-500 mt-2 font-medium relative z-10">Promedio general</p>
-           </div>
+             <p className="text-xs text-rose-500 mt-2 font-semibold relative z-10 tracking-tight">De la comunidad</p>
+           </button>
+           {isPastor && (
+             <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden group">
+               <div className="absolute -right-4 -bottom-4 bg-indigo-50 w-24 h-24 rounded-full group-hover:scale-125 transition-transform duration-500"></div>
+               <h4 className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-3 relative z-10">Retención Semanal</h4>
+               <div className="text-3xl sm:text-4xl font-serif text-slate-900 font-bold relative z-10">85%</div>
+               <p className="text-xs text-slate-500 mt-2 font-medium relative z-10">Promedio general</p>
+             </div>
+           )}
         </div>
 
         <div className="bg-white p-10 rounded-3xl border border-slate-200 shadow-sm max-w-4xl">
           <h3 className="font-serif text-xl mb-8 text-slate-900 font-bold flex items-center gap-2">Registro de Actividad Reciente</h3>
           <div className="space-y-2">
-             <div className="flex justify-between items-center p-4 hover:bg-slate-50 rounded-2xl transition-colors border border-transparent hover:border-slate-100">
-               <span className="text-sm text-slate-700 font-medium leading-relaxed">Nuevo hermano se ha vinculado exitosamente al directorio local.</span>
-               <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider shrink-0 bg-slate-50 px-2.5 py-1 rounded-md">Hace 5 min</span>
+            {allAnns.filter(a => a.churchName === (isApproved || localChurchName)).slice(0, 5).map((ann, idx) => (
+             <div key={idx} className="flex justify-between items-center p-4 hover:bg-slate-50 rounded-2xl transition-colors border border-transparent hover:border-slate-100">
+               <span className="text-sm text-slate-700 font-medium leading-relaxed">{ann.title}: {ann.content}</span>
+               <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider shrink-0 bg-slate-50 px-2.5 py-1 rounded-md">{ann.date || 'Reciente'}</span>
              </div>
-             <div className="flex justify-between items-center p-4 hover:bg-slate-50 rounded-2xl transition-colors border border-transparent hover:border-slate-100">
-               <span className="text-sm text-slate-700 font-medium leading-relaxed">Pastor {user?.email || 'Principal'} programó Ensayo General de Coro para el día Jueves.</span>
-               <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider shrink-0 bg-slate-50 px-2.5 py-1 rounded-md">Hace 2 horas</span>
-             </div>
-             <div className="flex justify-between items-center p-4 hover:bg-slate-50 rounded-2xl transition-colors border border-transparent hover:border-slate-100">
-               <span className="text-sm text-slate-700 font-medium leading-relaxed">Actualización masiva de estatutos misioneros enviada a la comunidad.</span>
-               <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider shrink-0 bg-slate-50 px-2.5 py-1 rounded-md">Hace 1 día</span>
-             </div>
+            ))}
+            {allAnns.filter(a => a.churchName === (isApproved || localChurchName)).length === 0 && (
+              <p className="text-sm text-slate-500 py-4">No hay actividad reciente registrada en la comunidad.</p>
+            )}
           </div>
         </div>
       </div>

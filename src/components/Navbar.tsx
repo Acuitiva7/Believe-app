@@ -1,7 +1,8 @@
 import { motion, useScroll, useTransform } from 'motion/react';
-import { Home, MapPin, LogIn, UserPlus, LogOut, LayoutDashboard, ShieldAlert } from 'lucide-react';
+import { Home, MapPin, LogIn, UserPlus, LogOut, LayoutDashboard, ShieldAlert, ShieldCheck } from 'lucide-react';
 import { auth, signOut } from '../lib/firebase';
 import { Logo } from './Logo';
+import { getUserRole, getUserChurchId } from '../lib/roles';
 
 export function Navbar({ currentView, setCurrentView, user }: any) {
   const { scrollY } = useScroll();
@@ -20,7 +21,9 @@ export function Navbar({ currentView, setCurrentView, user }: any) {
   const y = isHome ? navY : 0;
   const pointEvents = isHome ? homePointerEvents : 'auto';
 
-  const isSuperAdmin = user?.email === 'creador@believe.app';
+  const role = getUserRole(user?.email);
+  const churchId = getUserChurchId(user?.email);
+  const showAdminPanel = (role === 'pastor' || role === 'lider') && !!churchId;
 
   return (
     <motion.nav
@@ -48,15 +51,21 @@ export function Navbar({ currentView, setCurrentView, user }: any) {
         <div className="flex items-center gap-3 text-sm font-medium">
           {user ? (
             <>
-              {isSuperAdmin ? (
+              {role === 'superadmin' && (
                 <button onClick={() => setCurrentView('super-admin-dashboard')} className="text-secondary hover:text-[#2563EB] transition-colors flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
                   <ShieldAlert className="w-4 h-4" /> Super Admin
                 </button>
-              ) : (
-                <button onClick={() => setCurrentView('user-dashboard')} className="text-slate-600 dark:text-slate-300 hover:text-[#2563EB] transition-colors flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
-                  <LayoutDashboard className="w-4 h-4" /> Feed
+              )}
+              
+              {showAdminPanel && (
+                <button onClick={() => setCurrentView('admin-dashboard')} className="text-amber-600 dark:text-amber-500 hover:text-amber-700 transition-colors flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-900/30">
+                  <ShieldCheck className="w-4 h-4" /> {role === 'pastor' ? 'Panel Pastoral' : 'Panel Ministerial'}
                 </button>
               )}
+              
+              <button onClick={() => setCurrentView('user-dashboard')} className="text-slate-600 dark:text-slate-300 hover:text-[#2563EB] transition-colors flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
+                <LayoutDashboard className="w-4 h-4" /> Feed
+              </button>
               
               <div className="h-6 w-px bg-slate-200 dark:bg-slate-700 mx-1 hidden sm:block"></div>
 

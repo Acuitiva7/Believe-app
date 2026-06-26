@@ -12,6 +12,7 @@ import { UserDashboard, AdminDashboard, SuperAdminDashboard } from './components
 import { ChurchMap } from './components/ChurchMap';
 import { UserProfile } from './components/UserProfile';
 import { auth, onAuthStateChanged } from './lib/firebase';
+import { getUserRole, getUserChurchId } from './lib/roles';
 
 function useDailyNotification() {
   useEffect(() => {
@@ -60,6 +61,23 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
+  const role = getUserRole(user?.email);
+  const churchId = getUserChurchId(user?.email);
+
+  // Security checks
+  useEffect(() => {
+    if (currentView === 'admin-dashboard') {
+      if (role !== 'pastor' && role !== 'lider') {
+        setCurrentView('user-dashboard');
+      }
+    }
+    if (currentView === 'super-admin-dashboard') {
+      if (role !== 'superadmin') {
+        setCurrentView('user-dashboard');
+      }
+    }
+  }, [currentView, role]);
+
   return (
     <>
       <div className="bg-gradient-mesh opacity-50"></div>
@@ -83,8 +101,8 @@ export default function App() {
         {currentView === 'map' && <ChurchMap />}
         {currentView === 'user-profile' && <UserProfile user={user} setCurrentView={setCurrentView} />}
         {currentView === 'user-dashboard' && <UserDashboard user={user} />}
-        {currentView === 'admin-dashboard' && <AdminDashboard user={user} />}
-        {currentView === 'super-admin-dashboard' && <SuperAdminDashboard user={user} />}
+        {currentView === 'admin-dashboard' && (role === 'pastor' || role === 'lider') && <AdminDashboard user={user} />}
+        {currentView === 'super-admin-dashboard' && role === 'superadmin' && <SuperAdminDashboard user={user} />}
         {currentView.startsWith('category-') && <CategoryView categoryId={currentView.split('-')[1]} setCurrentView={setCurrentView} />}
       </main>
       

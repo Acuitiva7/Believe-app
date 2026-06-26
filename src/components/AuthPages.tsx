@@ -2,6 +2,7 @@ import { motion } from 'motion/react';
 import React, { useState } from 'react';
 import { Mail, Lock, User, ShieldCheck, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from '../lib/firebase';
+import { getUserRole, setUserRole } from '../lib/roles';
 
 export function AuthFlow({ view, setCurrentView }: { view: 'login' | 'register', setCurrentView: (v: string) => void }) {
   const [isLogin, setIsLogin] = useState(view === 'login');
@@ -21,25 +22,32 @@ export function AuthFlow({ view, setCurrentView }: { view: 'login' | 'register',
     try {
       if (isLogin) {
         await signInWithEmailAndPassword(auth, email, password);
-        if (email === 'creador@believe.app') {
+        const role = getUserRole(email);
+        
+        if (role === 'superadmin') {
           setCurrentView('super-admin-dashboard');
-        } else if (localStorage.getItem(`belief-pastor-${email}`)) {
+        } else if (role === 'pastor' || role === 'lider') {
           setCurrentView('admin-dashboard');
         } else {
-          setCurrentView('user-dashboard'); // Podrías tener un flag en la BD para saber si es admin de iglesia
+          setCurrentView('user-dashboard'); 
         }
       } else {
         await createUserWithEmailAndPassword(auth, email, password);
         setSuccess('¡Registro exitoso! Hemos enviado un correo de bienvenida a tu bandeja de entrada.');
         
-        if (isAdminReg) {
-          localStorage.setItem(`belief-pastor-${email}`, 'true');
+        if (email === 'creador@believe.app') {
+          setUserRole(email, 'superadmin');
+        } else if (isAdminReg) {
+          setUserRole(email, 'pastor');
+        } else {
+          setUserRole(email, 'usuario');
         }
 
         setTimeout(() => {
-          if (email === 'creador@believe.app') {
+          const role = getUserRole(email);
+          if (role === 'superadmin') {
             setCurrentView('super-admin-dashboard');
-          } else if (isAdminReg) {
+          } else if (role === 'pastor' || role === 'lider') {
             setCurrentView('admin-dashboard');
           } else {
             setCurrentView('user-dashboard');
