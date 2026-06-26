@@ -32,6 +32,14 @@ export const promiseCards = [
   { id: 2, title: "No temas", text: "Porque yo Jehová soy tu Dios, quien te sostiene de tu mano derecha.", ref: "Isaías 41:13" },
   { id: 3, title: "Todo obra para bien", text: "A los que aman a Dios, todas las cosas les ayudan a bien.", ref: "Romanos 8:28" },
   { id: 4, title: "Nueva Fuerza", text: "Los que esperan a Jehová tendrán nuevas fuerzas; levantarán alas como las águilas.", ref: "Isaías 40:31" },
+  { id: 5, title: "Paz que sobrepasa", text: "Y la paz de Dios, que sobrepasa todo entendimiento, guardará vuestros corazones.", ref: "Filipenses 4:7" },
+  { id: 6, title: "Sanidad Divina", text: "Yo soy Jehová tu sanador.", ref: "Éxodo 15:26" },
+  { id: 7, title: "Provisión", text: "Mi Dios, pues, suplirá todo lo que os falta conforme a sus riquezas en gloria en Cristo Jesús.", ref: "Filipenses 4:19" },
+  { id: 8, title: "Protección", text: "El ángel de Jehová acampa alrededor de los que le temen, y los defiende.", ref: "Salmos 34:7" },
+  { id: 9, title: "Guía Continua", text: "Jehová te pastoreará siempre, y en las sequías saciará tu alma.", ref: "Isaías 58:11" },
+  { id: 10, title: "Consuelo", text: "Cercano está Jehová a los quebrantados de corazón; y salva a los contritos de espíritu.", ref: "Salmos 34:18" },
+  { id: 11, title: "Perdón", text: "Si confesamos nuestros pecados, él es fiel y justo para perdonar nuestros pecados.", ref: "1 Juan 1:9" },
+  { id: 12, title: "Victoria", text: "Mas a Dios gracias, el cual nos lleva siempre en triunfo en Cristo Jesús.", ref: "2 Corintios 2:14" },
 ];
 
 export const mockTestimonials = [
@@ -67,6 +75,37 @@ export const categories = [
   { id: 'gratitud', name: 'Gratitud', icon: 'Coffee' },
   { id: 'paz', name: 'Paz', icon: 'Wind' },
 ];
+
+export const categoryPromises: Record<string, { title: string; text: string; ref: string }[]> = {
+  fe: [
+    { title: "Fe que Mueve", text: "Si tuviereis fe como un grano de mostaza, diréis a este monte: Pásate de aquí allá, y se pasará.", ref: "Mateo 17:20" },
+    { title: "Certeza", text: "Es, pues, la fe la certeza de lo que se espera, la convicción de lo que no se ve.", ref: "Hebreos 11:1" }
+  ],
+  esperanza: [
+    { title: "Esperanza Viva", text: "Porque yo sé los pensamientos que tengo acerca de vosotros, dice Jehová, pensamientos de paz, y no de mal, para daros el fin que esperáis.", ref: "Jeremías 29:11" },
+    { title: "Nuevo Amanecer", text: "Por la misericordia de Jehová no hemos sido consumidos, porque nunca decayeron sus misericordias. Nuevas son cada mañana.", ref: "Lamentaciones 3:22-23" }
+  ],
+  fortaleza: [
+    { title: "Fuerza de lo Alto", text: "Todo lo puedo en Cristo que me fortalece.", ref: "Filipenses 4:13" },
+    { title: "Refugio", text: "Dios es nuestro amparo y fortaleza, nuestro pronto auxilio en las tribulaciones.", ref: "Salmos 46:1" }
+  ],
+  amor: [
+    { title: "Amor Eterno", text: "Con amor eterno te he amado; por tanto, te prolongué mi misericordia.", ref: "Jeremías 31:3" },
+    { title: "Dios es Amor", text: "El que no ama, no ha conocido a Dios; porque Dios es amor.", ref: "1 Juan 4:8" }
+  ],
+  sabiduria: [
+    { title: "Pedir Sabiduría", text: "Y si alguno de vosotros tiene falta de sabiduría, pídala a Dios, el cual da a todos abundantemente y sin reproche, y le será dada.", ref: "Santiago 1:5" },
+    { title: "Principio de la Sabiduría", text: "El principio de la sabiduría es el temor de Jehová.", ref: "Proverbios 1:7" }
+  ],
+  gratitud: [
+    { title: "Dar Gracias", text: "Dad gracias en todo, porque esta es la voluntad de Dios para con vosotros en Cristo Jesús.", ref: "1 Tesalonicenses 5:18" },
+    { title: "Alabanza Continua", text: "Bendeciré a Jehová en todo tiempo; su alabanza estará de continuo en mi boca.", ref: "Salmos 34:1" }
+  ],
+  paz: [
+    { title: "Paz Perfecta", text: "Tú guardarás en completa paz a aquel cuyo pensamiento en ti persevera; porque en ti ha confiado.", ref: "Isaías 26:3" },
+    { title: "Paz que sobrepasa", text: "Y la paz de Dios, que sobrepasa todo entendimiento, guardará vuestros corazones y vuestros pensamientos en Cristo Jesús.", ref: "Filipenses 4:7" }
+  ]
+};
 
 // Persistence Helpers for Churches
 export interface Church {

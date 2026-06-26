@@ -6,7 +6,6 @@ import { Categories } from './components/Categories';
 import { Promises } from './components/Promises';
 import { Community } from './components/Community';
 import { Footer } from './components/Footer';
-import { Moon, Sun } from 'lucide-react';
 import { Navbar } from './components/Navbar';
 import { AuthFlow } from './components/AuthPages';
 import { UserDashboard, AdminDashboard, SuperAdminDashboard } from './components/Dashboards';
@@ -14,10 +13,45 @@ import { ChurchMap } from './components/ChurchMap';
 import { UserProfile } from './components/UserProfile';
 import { auth, onAuthStateChanged } from './lib/firebase';
 
+function useDailyNotification() {
+  useEffect(() => {
+    const checkNotification = () => {
+      const enabled = localStorage.getItem('belief-notifications-enabled') === 'true';
+      if (!enabled) return;
+      if (!("Notification" in window) || Notification.permission !== 'granted') return;
+
+      const now = new Date();
+      const today = now.toLocaleDateString();
+      const lastShown = localStorage.getItem('belief-last-notification-date');
+
+      // Check if it's 9 AM or later, and we haven't shown it today
+      if (lastShown !== today && now.getHours() >= 9) {
+        try {
+          new Notification('¡Buenos días!', {
+            body: 'Recuerda revisar la Palabra del Día y tu Diario Espiritual.',
+            icon: '/logo.png'
+          });
+          localStorage.setItem('belief-last-notification-date', today);
+        } catch (e) {
+          console.error('Error showing notification:', e);
+        }
+      }
+    };
+
+    // Check immediately and then every minute
+    checkNotification();
+    const interval = setInterval(checkNotification, 60000);
+    return () => clearInterval(interval);
+  }, []);
+}
+
+import { CategoryView } from './components/CategoryView';
+
 export default function App() {
-  const [isDark, setIsDark] = useState(false);
   const [currentView, setCurrentView] = useState('home');
   const [user, setUser] = useState<any>(null);
+
+  useDailyNotification();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -26,48 +60,22 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('belief-theme');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
-      setIsDark(true);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (isDark) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('belief-theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('belief-theme', 'light');
-    }
-  }, [isDark]);
-
   return (
     <>
-      <div className="bg-gradient-mesh"></div>
-      <div className="net-overlay"></div>
+      <div className="bg-gradient-mesh opacity-50"></div>
+      <div className="net-overlay opacity-30"></div>
       
-      <Navbar user={user} currentView={currentView} setCurrentView={setCurrentView} isDark={isDark} toggleTheme={() => setIsDark(!isDark)} />
-      
-      <button 
-        onClick={() => setIsDark(!isDark)}
-        className="fixed top-24 md:top-6 right-6 z-50 p-3 rounded-full glass-panel glass-panel-hover flex items-center justify-center text-belief-white hover:border-brand-2 transition-colors shadow-xl cursor-pointer"
-        aria-label="Toggle dark mode"
-      >
-        {isDark ? <Sun className="w-5 h-5 text-brand-3" /> : <Moon className="w-5 h-5 text-brand-1" />}
-      </button>
+      <Navbar user={user} currentView={currentView} setCurrentView={setCurrentView} />
 
-      <main className="flex flex-col min-h-screen relative z-10 transition-colors duration-500">
+      <main className="flex flex-col min-h-screen relative z-10">
         {currentView === 'home' && (
           <>
             <Hero setCurrentView={setCurrentView} user={user} />
             <WordOfDay />
             <CastNet />
-            <Categories />
+            <Categories setCurrentView={setCurrentView} />
             <Promises />
-            <Community />
+            <Community user={user} />
           </>
         )}
         {currentView === 'login' && <AuthFlow view="login" setCurrentView={setCurrentView} />}
@@ -77,6 +85,7 @@ export default function App() {
         {currentView === 'user-dashboard' && <UserDashboard user={user} />}
         {currentView === 'admin-dashboard' && <AdminDashboard user={user} />}
         {currentView === 'super-admin-dashboard' && <SuperAdminDashboard user={user} />}
+        {currentView.startsWith('category-') && <CategoryView categoryId={currentView.split('-')[1]} setCurrentView={setCurrentView} />}
       </main>
       
       {currentView === 'home' && <Footer />}

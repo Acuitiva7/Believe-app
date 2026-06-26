@@ -1,21 +1,31 @@
 import { motion, AnimatePresence } from 'motion/react';
-import { Camera, Save, MapPin, CheckCircle2, ChevronDown, ShieldAlert } from 'lucide-react';
+import { Camera, Save, MapPin, CheckCircle2, ChevronDown, ShieldAlert, Bell, BellOff } from 'lucide-react';
 import React, { useState, useRef, useEffect } from 'react';
 import { getLocalChurches, Church } from '../data';
 
 export function UserProfile({ user, setCurrentView }: { user?: any; setCurrentView?: (view: string) => void }) {
   const isSuperAdmin = user?.email === 'creador@believe.app';
   const defaultName = isSuperAdmin ? 'Creador Believe (Súper Admin)' : 'Usuario Believe';
-  const [name, setName] = useState(() => localStorage.getItem('belief-user-name') || defaultName);
-  const [bio, setBio] = useState(() => localStorage.getItem('belief-user-bio') || 'Buscando crecer en fe y conexión con la iglesia.');
-  const [church, setChurch] = useState(() => localStorage.getItem('belief-linked-church') || 'Centro Cristiano Vida');
-  const [avatar, setAvatar] = useState(() => localStorage.getItem('belief-user-avatar') || '');
+  const userId = user?.email || 'default';
+  const [name, setName] = useState(() => localStorage.getItem(`belief-user-name-${userId}`) || defaultName);
+  const [bio, setBio] = useState(() => localStorage.getItem(`belief-user-bio-${userId}`) || 'Buscando crecer en fe y conexión con la iglesia.');
+  const [church, setChurch] = useState(() => localStorage.getItem(`belief-linked-church-${userId}`) || 'Centro Cristiano Vida');
+  const [avatar, setAvatar] = useState(() => localStorage.getItem(`belief-user-avatar-${userId}`) || '');
+  const [notificationsEnabled, setNotificationsEnabled] = useState(() => localStorage.getItem(`belief-notifications-enabled-${userId}`) === 'true');
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [showChurchDropdown, setShowChurchDropdown] = useState(false);
   const [churches, setChurches] = useState<Church[]>(() => getLocalChurches());
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setName(localStorage.getItem(`belief-user-name-${userId}`) || defaultName);
+    setBio(localStorage.getItem(`belief-user-bio-${userId}`) || 'Buscando crecer en fe y conexión con la iglesia.');
+    setChurch(localStorage.getItem(`belief-linked-church-${userId}`) || 'Centro Cristiano Vida');
+    setAvatar(localStorage.getItem(`belief-user-avatar-${userId}`) || '');
+    setNotificationsEnabled(localStorage.getItem(`belief-notifications-enabled-${userId}`) === 'true');
+  }, [userId, defaultName]);
 
   useEffect(() => {
     setChurches(getLocalChurches());
@@ -31,12 +41,31 @@ export function UserProfile({ user, setCurrentView }: { user?: any; setCurrentVi
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const handleToggleNotifications = async () => {
+    if (!notificationsEnabled) {
+      if (!("Notification" in window)) {
+        alert("Tu navegador no soporta notificaciones de escritorio.");
+        return;
+      }
+      
+      const permission = await Notification.requestPermission();
+      if (permission === "granted") {
+        setNotificationsEnabled(true);
+      } else {
+        alert("Debes permitir las notificaciones en tu navegador para habilitar esta función.");
+      }
+    } else {
+      setNotificationsEnabled(false);
+    }
+  };
+
   const handleSave = () => {
-    localStorage.setItem('belief-user-name', name);
-    localStorage.setItem('belief-user-bio', bio);
-    localStorage.setItem('belief-linked-church', church);
-    localStorage.setItem('belief-user-avatar', avatar);
-    localStorage.setItem('belief-has-linked-church', 'true');
+    localStorage.setItem(`belief-user-name-${userId}`, name);
+    localStorage.setItem(`belief-user-bio-${userId}`, bio);
+    localStorage.setItem(`belief-linked-church-${userId}`, church);
+    localStorage.setItem(`belief-user-avatar-${userId}`, avatar);
+    localStorage.setItem(`belief-has-linked-church-${userId}`, 'true');
+    localStorage.setItem(`belief-notifications-enabled-${userId}`, String(notificationsEnabled));
     setSaveSuccess(true);
     setTimeout(() => {
       setSaveSuccess(false);
@@ -176,6 +205,33 @@ export function UserProfile({ user, setCurrentView }: { user?: any; setCurrentVi
                   )}
                 </AnimatePresence>
               </div>
+            </div>
+          </div>
+
+          <div className="pt-8 border-t border-theme-border space-y-5 mb-8">
+            <h3 className="font-serif text-xl text-brand-2 font-bold">Notificaciones y Recordatorios</h3>
+            <p className="text-sm opacity-70 mb-4 tracking-wide font-light">Configura alertas diarias para mantener tu conexión espiritual activa.</p>
+            
+            <div className="glass-panel p-5 rounded-2xl flex flex-col sm:flex-row items-center justify-between border-brand-2/30 gap-4">
+              <div className="flex items-center gap-4 w-full">
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 transition-colors ${notificationsEnabled ? 'bg-brand-1/20 text-brand-1' : 'bg-black/10 dark:bg-white/10 opacity-60'}`}>
+                  {notificationsEnabled ? <Bell className="w-5 h-5" /> : <BellOff className="w-5 h-5" />}
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-bold text-sm">Recordatorio Diario (9:00 AM)</h4>
+                  <p className="text-xs opacity-60 mt-0.5">Recibe una alerta para revisar la Palabra del Día y tu Diario Espiritual.</p>
+                </div>
+              </div>
+              <button 
+                onClick={handleToggleNotifications}
+                className={`px-5 py-2 rounded-full text-xs uppercase tracking-widest font-bold transition-all whitespace-nowrap ${
+                  notificationsEnabled 
+                    ? 'bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/20' 
+                    : 'bg-brand-1 text-white hover:bg-brand-2 shadow-md'
+                }`}
+              >
+                {notificationsEnabled ? 'Desactivar' : 'Activar'}
+              </button>
             </div>
           </div>
 

@@ -28,22 +28,28 @@ export function CastNet() {
   };
 
   return (
-    <section className="py-24 px-4 relative z-10 bg-belief-blue/40 border-y border-white/5">
-      <div className="max-w-3xl mx-auto text-center">
+    <section className="py-24 px-4 relative z-10 bg-primary/5 border-y border-primary/10 overflow-hidden font-sans">
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[100px] -mr-64 -mt-64 pointer-events-none"></div>
+      <div className="max-w-4xl mx-auto text-center relative z-10">
         <motion.div
            initial={{ opacity: 0, y: 20 }}
            whileInView={{ opacity: 1, y: 0 }}
            viewport={{ once: true }}
-           className="mb-10"
+           className="mb-12"
         >
-          <h2 className="font-serif text-4xl md:text-5xl text-belief-gold mb-4">Lanza tu Red</h2>
-          <p className="text-belief-white/70 text-lg max-w-xl mx-auto">
+          <div className="flex justify-center mb-4">
+             <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-sm border border-slate-200">
+               <Anchor className="w-8 h-8 text-primary" />
+             </div>
+          </div>
+          <h2 className="font-serif text-3xl md:text-5xl text-slate-900 mb-6 font-bold tracking-tight">Lanza tu Red</h2>
+          <p className="text-slate-600 text-lg max-w-2xl mx-auto leading-relaxed">
             ¿Hay algo en tu mente que te preocupa o una meta por la que oras? 
             Escríbelo aquí y "echa la red" una vez más, confiando en Su palabra.
           </p>
         </motion.div>
 
-        <div className="glass-panel rounded-3xl p-6 md:p-10 relative shadow-2xl">
+        <div className="bg-white rounded-[2.5rem] p-8 md:p-12 relative shadow-xl shadow-primary/5 border border-slate-200/60 max-w-3xl mx-auto">
           <AnimatePresence mode="wait">
             {!isCasting && !result && (
               <motion.div
@@ -56,16 +62,16 @@ export function CastNet() {
                 <textarea
                   value={inputState}
                   onChange={(e) => setInputState(e.target.value)}
-                  placeholder="Escribe tu preocupación, meta u oración..."
-                  className="w-full h-32 bg-black/20 border border-white/10 rounded-2xl p-4 text-belief-white placeholder:text-belief-white/30 focus:outline-none focus:border-belief-gold/50 transition-colors resize-none font-sans"
+                  placeholder="Escribe tu preocupación, tu fe u oración..."
+                  className="w-full h-40 bg-slate-50 border border-slate-200 rounded-2xl p-6 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/40 transition-shadow resize-none font-sans text-base leading-relaxed"
                 />
                 <button
                   onClick={handleCast}
                   disabled={!inputState.trim()}
-                  className="bg-belief-gold hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed text-belief-blue font-bold px-8 py-4 rounded-full transition-all flex items-center justify-center gap-2 group w-full md:w-auto md:self-center uppercase text-sm tracking-widest"
+                  className="bg-primary disabled:opacity-50 hover:bg-primary/90 text-white font-bold py-4 px-8 rounded-full transition-all flex items-center justify-center gap-3 w-full sm:w-auto mx-auto shadow-md"
                 >
-                  <Anchor className="w-5 h-5 group-hover:-rotate-12 transition-transform" />
-                  Echar la red
+                  <Anchor className="w-5 h-5" /> 
+                  <span className="uppercase tracking-widest text-sm">Echar la Red</span>
                 </button>
               </motion.div>
             )}
@@ -75,66 +81,53 @@ export function CastNet() {
                 key="casting-stage"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="py-12 flex flex-col items-center justify-center"
+                exit={{ opacity: 0, scale: 1.1 }}
+                className="py-16 flex flex-col items-center justify-center"
               >
                 <motion.div
                   animate={{ 
-                    y: [0, -15, 0],
-                    rotate: [0, -5, 5, 0]
+                    y: [0, 15, 0],
+                    rotate: [0, 5, -5, 0]
                   }}
                   transition={{ 
-                    duration: 2, 
+                    duration: 2,
                     repeat: Infinity,
-                    ease: "easeInOut" 
+                    ease: "easeInOut"
                   }}
-                  className="mb-6 relative"
                 >
-                  <Waves className="w-16 h-16 text-belief-gold" />
-                  
-                  {/* Ripples */}
-                  <motion.div 
-                    animate={{ scale: [1, 2], opacity: [0.5, 0] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                    className="absolute inset-0 border-2 border-belief-gold rounded-full"
-                  />
-                  <motion.div 
-                    animate={{ scale: [1, 2.5], opacity: [0.3, 0] }}
-                    transition={{ duration: 2, delay: 0.5, repeat: Infinity }}
-                    className="absolute inset-0 border border-belief-gold rounded-full"
-                  />
+                  <Waves className="w-16 h-16 text-primary/60 mb-6" />
                 </motion.div>
-                <p className="font-serif text-xl animate-pulse text-belief-white/80">
-                  Lanzando la red sobre las aguas...
-                </p>
+                <h3 className="font-serif text-2xl text-slate-800 font-bold tracking-tight">Echando la red...</h3>
+                <p className="text-slate-500 mt-2 font-medium">Bajo tu palabra, esperaremos.</p>
               </motion.div>
             )}
 
             {result && !isCasting && (
               <motion.div
                 key="result-stage"
-                initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                className="flex flex-col items-center text-center py-4"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="py-4 md:px-8"
               >
-                <div className="w-full p-8 bg-black/20 rounded-2xl border border-belief-gold/20 mb-8 relative overflow-hidden">
-                  <div className="absolute top-0 left-0 w-2 h-full bg-belief-gold"></div>
-                  <p className="font-serif text-2xl md:text-3xl text-belief-white mb-4 leading-relaxed">
+                <div className="bg-amber-50 p-8 md:p-10 rounded-[2rem] border border-amber-100 shadow-sm relative overflow-hidden text-left mb-8">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-white/50 rounded-full blur-2xl -mr-16 -mt-16 pointer-events-none"></div>
+                  <h3 className="font-sans font-bold text-lg text-amber-800 mb-4 tracking-wider flex items-center gap-2">
+                    RECOLECCIÓN
+                  </h3>
+                  <p className="font-serif text-2xl md:text-3xl text-slate-900 leading-snug mb-6 font-bold">
                     "{result.verse}"
                   </p>
-                  <span className="text-belief-gold font-bold tracking-widest uppercase text-sm block mb-6">
-                    {result.reference}
-                  </span>
-                  <div className="h-px w-1/4 bg-white/10 mx-auto mb-6" />
-                  <p className="text-belief-white/80 italic font-light">
+                  <div className="h-px w-full bg-amber-200/50 mb-6"></div>
+                  <p className="font-sans text-slate-700 leading-relaxed font-medium">
                     {result.reflection}
                   </p>
                 </div>
+                
                 <button
                   onClick={handleReset}
-                  className="text-belief-white/60 hover:text-belief-white underline underline-offset-4 text-sm transition-colors"
+                  className="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-3.5 px-8 rounded-full transition-colors font-sans text-sm tracking-wider uppercase"
                 >
-                  Volver a intentar
+                  Intentar de Nuevo
                 </button>
               </motion.div>
             )}

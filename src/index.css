@@ -1,82 +1,85 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Montserrat", "Helvetica Neue", Arial, sans-serif;
-  --font-serif: "Montserrat", Georgia, serif;
+  --font-sans: "Inter", "Helvetica Neue", Arial, sans-serif;
+  --font-serif: "Poppins", Georgia, serif;
 
-  --color-brand-1: #f3005a;
-  --color-brand-2: #ff763a;
-  --color-brand-3: #ffc233;
-  --color-brand-4: #fff282;
-  --color-brand-5: #d2fce0;
+  --color-primary: #2563EB;
+  --color-secondary: #38BDF8;
+  --color-accent: #F59E0B;
+  --color-success: #10B981;
+  
+  --color-brand-1: #2563EB; /* Blue 600 */
+  --color-brand-2: #1D4ED8; /* Blue 700 */
+  --color-brand-3: #60A5FA; /* Blue 400 */
 
-  --color-belief-blue: var(--theme-bg);
-  --color-belief-gold: var(--theme-primary);
-  --color-belief-white: var(--theme-text);
+  --color-background: var(--theme-bg);
+  --color-foreground: var(--theme-text);
   
   --color-border-theme: var(--theme-border);
 }
 
 :root {
-  --theme-bg: #ffffff;
-  --theme-text: #1a1a1a;
-  --theme-primary: #ff763a;
-  --theme-card-bg: rgba(255, 255, 255, 0.7);
-  --theme-border: rgba(0, 0, 0, 0.1);
-  --theme-input-bg: rgba(0, 0, 0, 0.05);
+  --theme-bg: #F8FAFC;
+  --theme-text: #0F172A;
+  --theme-primary: #2563EB;
+  --theme-card-bg: #FFFFFF;
+  --theme-border: #E2E8F0;
+  --theme-input-bg: #F1F5F9;
 }
 
 .dark {
-  --theme-bg: #121212;
-  --theme-text: #fafafa;
-  --theme-primary: #f3005a;
-  --theme-card-bg: rgba(0, 0, 0, 0.5);
-  --theme-border: rgba(255, 255, 255, 0.1);
-  --theme-input-bg: rgba(255, 255, 255, 0.05);
+  --theme-bg: #0F172A;
+  --theme-text: #F8FAFC;
+  --theme-primary: #38BDF8;
+  --theme-card-bg: #1E293B;
+  --theme-border: #334155;
+  --theme-input-bg: #0F172A;
 }
 
 body {
-  @apply bg-belief-blue text-belief-white font-serif overflow-x-hidden antialiased transition-colors duration-500;
+  @apply bg-background text-foreground font-sans antialiased transition-colors duration-500;
 }
 
-/* Glass panel adjustments for light/dark */
+h1, h2, h3, h4, h5, h6, .font-serif {
+  @apply font-serif;
+}
+
 .glass-panel {
   background: var(--theme-card-bg);
-  backdrop-filter: blur(12px);
   border: 1px solid var(--theme-border);
-  border-radius: 16px;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
-  transition: background-color 0.5s, border-color 0.5s, box-shadow 0.5s;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
 }
 
 .dark .glass-panel {
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
 }
 
 .glass-panel-hover {
-  @apply hover:border-brand-2 transition-colors duration-300;
+  @apply hover:border-primary transition-colors duration-300;
 }
 
-/* Gradients */
 .bg-gradient-mesh {
   position: fixed;
   inset: 0;
   background-image: 
-    radial-gradient(at 0% 0%, rgba(243, 0, 90, 0.1) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(255, 118, 58, 0.1) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(255, 194, 51, 0.15) 0px, transparent 50%),
-    radial-gradient(at 0% 100%, rgba(210, 252, 224, 0.4) 0px, transparent 50%);
+    radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.05) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(56, 189, 248, 0.05) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(245, 158, 11, 0.05) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(16, 185, 129, 0.05) 0px, transparent 50%);
   z-index: -2;
   transition: background-image 0.5s;
 }
 
 .dark .bg-gradient-mesh {
   background-image: 
-    radial-gradient(at 0% 0%, rgba(243, 0, 90, 0.15) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(255, 118, 58, 0.15) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(255, 194, 51, 0.15) 0px, transparent 50%),
-    radial-gradient(at 0% 100%, rgba(210, 252, 224, 0.1) 0px, transparent 50%);
+    radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.1) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(56, 189, 248, 0.1) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(245, 158, 11, 0.1) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(16, 185, 129, 0.05) 0px, transparent 50%);
 }
 
 .net-overlay {
@@ -86,23 +89,13 @@ body {
   background-size: 40px 40px;
   z-index: -1;
   transition: opacity 0.5s;
+  opacity: 0.5;
 }
 
-/* Specific overriding of manual hardcoded colors */
-.bg-black\/20, .bg-transparent, .bg-\[\#1c203b\]\/90 {
-  background-color: var(--theme-input-bg) !important;
+.dark .net-overlay {
+  opacity: 0.2;
 }
 
-.border-white\/5, .border-white\/10, .border-white\/20, .border-black\/20 {
-  border-color: var(--theme-border) !important;
-}
-
-/* Make sure text elements that used black inherit properly in light mode */
-.text-belief-blue {
-  color: var(--theme-bg) !important; /* Retained logic that it contrasted with the button */
-}
-
-/* For primary buttons to remain readable */
-button.bg-belief-gold {
-  color: #ffffff !important;
+.border-theme-border {
+  border-color: var(--theme-border);
 }

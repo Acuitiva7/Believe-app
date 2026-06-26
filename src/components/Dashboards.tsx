@@ -11,11 +11,12 @@ import {
 import { Journal } from './Journal';
 
 export function UserDashboard({ user }: { user?: any }) {
+  const userId = user?.email || 'default';
   const [activeTab, setActiveTab] = useState<'descubrir' | 'comunidad' | 'diario'>('descubrir');
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [churches, setChurches] = useState<Church[]>([]);
-  const [linkedChurch, setLinkedChurch] = useState<string | null>(() => localStorage.getItem('belief-linked-church'));
-  const [hasLinkedChurch, setHasLinkedChurch] = useState(() => localStorage.getItem('belief-has-linked-church') === 'true');
+  const [linkedChurch, setLinkedChurch] = useState<string | null>(() => localStorage.getItem(`belief-linked-church-${userId}`));
+  const [hasLinkedChurch, setHasLinkedChurch] = useState(() => localStorage.getItem(`belief-has-linked-church-${userId}`) === 'true');
   const [newComment, setNewComment] = useState<{ [postId: string]: string }>({});
   const [searchQuery, setSearchQuery] = useState('');
   const [inspectingChurch, setInspectingChurch] = useState<Church | null>(null);
@@ -23,14 +24,14 @@ export function UserDashboard({ user }: { user?: any }) {
   useEffect(() => {
     setAnnouncements(getLocalAnnouncements());
     setChurches(getLocalChurches());
-    setLinkedChurch(localStorage.getItem('belief-linked-church'));
-    setHasLinkedChurch(localStorage.getItem('belief-has-linked-church') === 'true');
-  }, [activeTab]);
+    setLinkedChurch(localStorage.getItem(`belief-linked-church-${userId}`));
+    setHasLinkedChurch(localStorage.getItem(`belief-has-linked-church-${userId}`) === 'true');
+  }, [activeTab, userId]);
 
   const handleLike = (id: string) => {
     const updated = announcements.map(ann => {
       if (ann.id === id) {
-        const likedSymbol = `belief-liked-ann-${id}`;
+        const likedSymbol = `belief-liked-ann-${id}-${userId}`;
         const alreadyLiked = localStorage.getItem(likedSymbol) === 'true';
         if (alreadyLiked) {
           localStorage.removeItem(likedSymbol);
@@ -47,14 +48,14 @@ export function UserDashboard({ user }: { user?: any }) {
   };
 
   const isPostLiked = (id: string) => {
-    return localStorage.getItem(`belief-liked-ann-${id}`) === 'true';
+    return localStorage.getItem(`belief-liked-ann-${id}-${userId}`) === 'true';
   };
 
   const handleAddComment = (postId: string) => {
     const text = newComment[postId]?.trim();
     if (!text) return;
 
-    const loggedName = localStorage.getItem('belief-user-name') || user?.email?.split('@')[0] || 'Usuario Believe';
+    const loggedName = localStorage.getItem(`belief-user-name-${userId}`) || user?.email?.split('@')[0] || 'Usuario Believe';
     const updated = announcements.map(ann => {
       if (ann.id === postId) {
         return {
@@ -74,15 +75,15 @@ export function UserDashboard({ user }: { user?: any }) {
   };
 
   const handleJoinChurch = (churchName: string) => {
-    localStorage.setItem('belief-linked-church', churchName);
-    localStorage.setItem('belief-has-linked-church', 'true');
+    localStorage.setItem(`belief-linked-church-${userId}`, churchName);
+    localStorage.setItem(`belief-has-linked-church-${userId}`, 'true');
     setLinkedChurch(churchName);
     setHasLinkedChurch(true);
   };
 
   const handleLeaveChurch = () => {
-    localStorage.removeItem('belief-linked-church');
-    localStorage.setItem('belief-has-linked-church', 'false');
+    localStorage.removeItem(`belief-linked-church-${userId}`);
+    localStorage.setItem(`belief-has-linked-church-${userId}`, 'false');
     setLinkedChurch(null);
     setHasLinkedChurch(false);
   };
@@ -94,34 +95,34 @@ export function UserDashboard({ user }: { user?: any }) {
   const localAnnouncements = announcements.filter(a => a.category === 'local' && a.churchName === linkedChurch);
 
   return (
-    <div className="min-h-screen pt-32 px-4 pb-24 text-belief-white">
+    <div className="min-h-screen pt-32 px-4 pb-24 bg-slate-50 text-slate-800 font-sans">
       <div className="max-w-6xl mx-auto">
         {/* Tab Selector */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex justify-center mb-10">
-          <div className="glass-panel p-1 inline-flex rounded-full border border-theme-border">
+          <div className="bg-white p-1.5 inline-flex rounded-full border border-slate-200 shadow-sm">
             <button
               onClick={() => setActiveTab('descubrir')}
-              className={`px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest transition-all ${
-                activeTab === 'descubrir' ? 'bg-brand-1 text-white' : 'opacity-60 hover:opacity-100'
+              className={`px-6 py-2.5 rounded-full text-xs font-semibold uppercase tracking-widest transition-all ${
+                activeTab === 'descubrir' ? 'bg-primary text-white shadow-md' : 'text-slate-500 hover:text-slate-800 cursor-pointer'
               }`}
             >
-              <span className="flex items-center gap-2"><Compass className="w-4 h-4" /> Descubrir</span>
+              <span className="flex items-center gap-2"><Compass className="w-4 h-4" /> Global</span>
             </button>
             <button
               onClick={() => setActiveTab('comunidad')}
-              className={`px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest transition-all cursor-pointer ${
-                activeTab === 'comunidad' ? 'bg-brand-1 text-white' : 'opacity-60 hover:opacity-100'
+              className={`px-6 py-2.5 rounded-full text-xs font-semibold uppercase tracking-widest transition-all cursor-pointer ${
+                activeTab === 'comunidad' ? 'bg-primary text-white shadow-md' : 'text-slate-500 hover:text-slate-800 cursor-pointer'
               }`}
             >
-              <span className="flex items-center gap-2"><Users className="w-4 h-4" /> Mi Comunidad</span>
+              <span className="flex items-center gap-2"><Users className="w-4 h-4" /> Comunidad</span>
             </button>
             <button
               onClick={() => setActiveTab('diario')}
-              className={`px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest transition-all cursor-pointer ${
-                activeTab === 'diario' ? 'bg-brand-1 text-white' : 'opacity-60 hover:opacity-100'
+              className={`px-6 py-2.5 rounded-full text-xs font-semibold uppercase tracking-widest transition-all cursor-pointer ${
+                activeTab === 'diario' ? 'bg-primary text-white shadow-md' : 'text-slate-500 hover:text-slate-800 cursor-pointer'
               }`}
             >
-              <span className="flex items-center gap-2"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg> Mi Diario</span>
+              <span className="flex items-center gap-2"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg> Diario</span>
             </button>
           </div>
         </motion.div>
@@ -134,58 +135,59 @@ export function UserDashboard({ user }: { user?: any }) {
               <div className="space-y-6 mb-8">
                 {globalAnnouncements.length > 0 ? (
                   globalAnnouncements.map((ann) => (
-                    <motion.div key={ann.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="glass-panel p-8 rounded-3xl border-l-4 border-l-brand-3 relative overflow-hidden bg-gradient-to-r from-brand-3/5 to-transparent border border-theme-border">
-                      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+                    <motion.div key={ann.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white p-8 rounded-3xl border border-slate-200 relative overflow-hidden shadow-sm">
+                      <div className="absolute top-0 left-0 w-1.5 h-full bg-amber-500"></div>
+                      <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-brand-3 flex items-center justify-center text-black font-bold text-xs uppercase">
+                          <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 font-bold text-sm uppercase ring-4 ring-amber-50">
                             G
                           </div>
                           <div>
-                            <h3 className="font-sans font-bold text-sm text-brand-3">{ann.author}</h3>
-                            <p className="text-[10px] opacity-50 uppercase tracking-widest">Boletín Oficial • {ann.date}</p>
+                            <h3 className="font-sans font-bold text-sm text-slate-800">{ann.author}</h3>
+                            <p className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold">Boletín Oficial • {ann.date}</p>
                           </div>
                         </div>
-                        <span className="bg-brand-3/20 text-brand-3 px-2.5 py-1 rounded-full text-[9px] uppercase tracking-wider font-bold">Global</span>
+                        <span className="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-[10px] uppercase tracking-wider font-bold">Global</span>
                       </div>
-                      <h2 className="font-serif text-2xl mb-3 font-semibold text-brand-4">{ann.title}</h2>
-                      <p className="font-sans text-sm opacity-80 mb-6 font-light leading-relaxed max-w-3xl whitespace-pre-line">
+                      <h2 className="font-serif text-2xl mb-4 font-semibold text-slate-900 leading-snug">{ann.title}</h2>
+                      <p className="font-sans text-sm text-slate-600 mb-6 leading-relaxed whitespace-pre-line">
                         {ann.content}
                       </p>
                       
                       {/* Likes & Comments inside Global */}
-                      <div className="flex flex-col gap-4 pt-4 border-t border-white/10">
+                      <div className="flex flex-col gap-4 pt-5 border-t border-slate-100">
                         <div className="flex items-center gap-6">
                           <button 
                             onClick={() => handleLike(ann.id)} 
-                            className={`flex items-center gap-2 text-xs font-bold uppercase transition-colors cursor-pointer ${isPostLiked(ann.id) ? 'text-brand-3' : 'opacity-60 hover:opacity-100'}`}
+                            className={`flex items-center gap-2 text-sm font-semibold transition-colors cursor-pointer ${isPostLiked(ann.id) ? 'text-rose-500' : 'text-slate-500 hover:text-slate-700'}`}
                           >
-                            <Heart className={`w-4 h-4 ${isPostLiked(ann.id) ? 'fill-current' : ''}`} /> {ann.likes} Likes
+                            <Heart className={`w-4 h-4 ${isPostLiked(ann.id) ? 'fill-current text-rose-500' : ''}`} /> {ann.likes} Me gusta
                           </button>
                         </div>
 
                         {/* Custom Comments list for global */}
                         <div className="space-y-3 mt-2">
                           {ann.comments && ann.comments.map((comm, idx) => (
-                            <div key={idx} className="flex gap-2.5 bg-white/5 p-3 rounded-2xl text-xs max-w-xl font-light">
-                              <span className="font-bold text-brand-3">{comm.author}:</span>
-                              <span>{comm.text}</span>
+                            <div key={idx} className="flex gap-3 bg-slate-50 p-4 rounded-xl text-sm border border-slate-100">
+                              <span className="font-bold text-primary shrink-0">{comm.author}</span>
+                              <span className="text-slate-700 leading-relaxed">{comm.text}</span>
                             </div>
                           ))}
                           
-                          <div className="relative max-w-xl flex gap-2">
+                          <div className="relative flex gap-3 pt-2">
                             <input 
                               type="text" 
                               value={newComment[ann.id] || ''}
                               onChange={(e) => setNewComment(prev => ({ ...prev, [ann.id]: e.target.value }))}
-                              placeholder="Escribe un comentario o amén de apoyo..."
-                              className="w-full bg-black/30 border border-white/10 rounded-full py-2 px-4 text-xs focus:outline-none focus:border-brand-3" 
+                              placeholder="Escribe un comentario..."
+                              className="w-full bg-slate-50 border border-slate-200 rounded-full py-2.5 px-5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-shadow" 
                               onKeyDown={(e) => e.key === 'Enter' && handleAddComment(ann.id)}
                             />
                             <button 
                               onClick={() => handleAddComment(ann.id)}
-                              className="px-4 py-2 bg-brand-3 text-black font-bold text-xs rounded-full hover:bg-brand-4"
+                              className="px-6 py-2.5 bg-slate-900 text-white font-bold text-sm rounded-full hover:bg-slate-800 transition-colors shrink-0"
                             >
-                              Enviar
+                              Publicar
                             </button>
                           </div>
                         </div>
@@ -193,80 +195,83 @@ export function UserDashboard({ user }: { user?: any }) {
                     </motion.div>
                   ))
                 ) : (
-                  <div className="glass-panel p-8 rounded-3xl text-center border border-theme-border opacity-70 mb-4">
-                    <p className="font-serif text-lg">No hay comunicados globales activos en este momento.</p>
+                  <div className="bg-white p-10 rounded-3xl text-center border border-slate-200 shadow-sm mb-4">
+                    <p className="font-serif text-lg text-slate-500">No hay comunicados globales activos en este momento.</p>
                   </div>
                 )}
               </div>
 
               {/* Word of the Day Grid */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-                <div className="md:col-span-2 glass-panel p-8 rounded-3xl border-l-4 border-brand-2 relative overflow-hidden border border-theme-border">
-                  <div className="absolute top-0 right-0 w-64 h-64 bg-brand-2/10 rounded-full blur-3xl -mr-20 -mt-20"></div>
-                  <h3 className="text-xs uppercase tracking-widest opacity-60 mb-2 font-sans font-bold text-brand-2">Palabra de Hoy</h3>
-                  <h2 className="font-serif text-3xl mb-4 italic">"Por tanto, os digo que todo lo que pidiereis orando, creed que lo recibiréis..."</h2>
-                  <p className="font-sans text-sm opacity-80 mb-6 font-light">Marcos 11:24</p>
-                  <div className="text-xs opacity-70 leading-relaxed font-sans max-w-xl mb-4">
+                <div className="md:col-span-2 bg-gradient-to-br from-primary to-blue-800 text-white p-8 sm:p-10 rounded-3xl relative overflow-hidden shadow-lg">
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-20 -mt-20"></div>
+                  <h3 className="text-xs uppercase tracking-widest text-blue-200 mb-3 font-semibold font-sans">Palabra de Hoy</h3>
+                  <h2 className="font-serif text-3xl sm:text-4xl mb-4 italic leading-tight text-white">"Por tanto, os digo que todo lo que pidiereis orando, creed que lo recibiréis..."</h2>
+                  <p className="font-sans text-sm text-blue-200 mb-6 font-semibold">Marcos 11:24</p>
+                  <div className="text-sm text-blue-100/90 leading-relaxed max-w-xl font-sans">
                      La oración activa no es un deseo estático; es la convicción profunda de que Dios atiende con amor y obrará conforme a su perfecta voluntad en el momento propicio.
                   </div>
                 </div>
 
                 {/* Quick Link/Search Widget */}
-                <div className="glass-panel p-6 rounded-3xl flex flex-col justify-between border border-theme-border bg-gradient-to-br from-brand-1/5 to-transparent">
-                  <div>
-                    <h3 className="font-sans text-sm font-bold uppercase tracking-widest mb-3 flex items-center gap-2">
-                      <Search className="w-4 h-4 text-brand-1" /> Busca tu Iglesia
+                <div className="bg-white p-8 rounded-3xl flex flex-col justify-between border border-slate-200 shadow-sm relative overflow-hidden group">
+                  <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-sky-200/50 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
+                  <div className="relative z-10">
+                    <h3 className="font-serif text-xl font-bold mb-3 flex items-center gap-2 text-slate-900">
+                      <Search className="w-5 h-5 text-sky-500" /> Mi Iglesia Local
                     </h3>
-                    <p className="text-xs opacity-60 mb-4 leading-relaxed">
-                      Conéctate con tu congregación local para ver sus anuncios, boletines y eventos pastorales exclusivos.
+                    <p className="text-sm text-slate-600 mb-6 leading-relaxed">
+                      Conéctate con tu congregación para ver boletines y eventos exclusivos.
                     </p>
                   </div>
+                  <div className="relative z-10">
                   {linkedChurch ? (
-                    <div className="bg-brand-1/10 p-4 rounded-2xl border border-brand-1/20 text-xs">
-                      <p className="opacity-60 uppercase font-bold tracking-wider text-[9px] mb-1">Vinculado actualmente a:</p>
-                      <p className="font-bold text-brand-1 text-sm">{linkedChurch}</p>
-                      <button onClick={handleLeaveChurch} className="mt-3 text-[10px] uppercase tracking-wider font-bold text-brand-2 hover:underline">Vincular otra</button>
+                    <div className="bg-sky-50 p-5 rounded-2xl border border-sky-100">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-sky-600 mb-1">Vinculado actualmente a:</p>
+                      <p className="font-bold text-slate-900 text-lg font-serif mb-3">{linkedChurch}</p>
+                      <button onClick={handleLeaveChurch} className="text-xs font-semibold text-sky-600 hover:text-sky-700 uppercase tracking-widest transition-colors flex items-center gap-1"><ChevronRight className="w-3 h-3"/> Desvincular</button>
                     </div>
                   ) : (
-                    <div className="bg-black/10 p-3 rounded-2xl text-xs opacity-80 border border-white/5 text-center">
-                      <p className="mb-2.5 font-sans">No tienes ninguna iglesia vinculada.</p>
-                      <button onClick={() => setActiveTab('comunidad')} className="text-brand-1 font-bold uppercase tracking-wider hover:underline text-[10px]">Buscar Ahora</button>
+                    <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 text-center">
+                      <p className="mb-4 font-sans text-sm text-slate-600">Aún no tienes iglesia vinculada.</p>
+                      <button onClick={() => setActiveTab('comunidad')} className="w-full bg-slate-900 text-white py-3 rounded-xl font-bold text-sm transition-all hover:bg-slate-800">Encontrar Ahora</button>
                     </div>
                   )}
+                  </div>
                 </div>
               </div>
 
               {/* Suggestions / Nearby Info */}
-              <div className="mb-12">
-                <h3 className="font-serif text-2xl mb-6 font-semibold">Iglesias sugeridas en la red</h3>
+              <div className="mb-8">
+                <h3 className="font-serif text-2xl mb-6 font-bold text-slate-900">Iglesias destacadas en la red</h3>
                 {churches.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {churches.slice(0, 3).map((church) => (
-                      <div key={church.id} className="glass-panel rounded-2xl overflow-hidden group border border-theme-border hover:border-brand-1/40 transition-all flex flex-col justify-between">
+                      <div key={church.id} className="bg-white rounded-3xl overflow-hidden group border border-slate-200 hover:border-primary/40 hover:shadow-lg transition-all flex flex-col justify-between shadow-sm">
                         <div>
-                          <div className="h-28 bg-brand-1/10 relative flex items-center justify-center border-b border-theme-border/50 overflow-hidden">
+                          <div className="h-32 bg-slate-100 relative flex items-center justify-center border-b border-slate-200 overflow-hidden">
                             {church.logo ? (
-                              <img src={church.logo} alt={church.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                              <img src={church.logo} alt={church.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                             ) : (
-                              <MapPin className="w-8 h-8 text-brand-1/40 group-hover:text-brand-1/80 transition-colors" />
+                              <MapPin className="w-8 h-8 text-slate-300 group-hover:text-primary transition-colors duration-300" />
                             )}
                           </div>
-                          <div className="p-5">
-                            <h4 className="font-bold mb-1 text-belief-white truncate">{church.name}</h4>
-                            <p className="text-xs opacity-60 flex items-center gap-1"><MapPin className="w-3 h-3" /> {church.loc}</p>
-                            <p className="text-[10px] opacity-40 mt-1">{church.members} miembros registrados</p>
+                          <div className="p-6">
+                            <h4 className="font-bold text-lg mb-2 text-slate-900 truncate font-serif">{church.name}</h4>
+                            <p className="text-sm text-slate-600 flex items-center gap-1.5 mb-2"><MapPin className="w-4 h-4 text-slate-400" /> {church.loc}</p>
+                            <p className="text-xs font-semibold text-primary/80 bg-primary/5 inline-flex items-center px-2 py-1 rounded-md">{church.members} miembros</p>
                           </div>
                         </div>
-                        <div className="p-5 pt-0 flex gap-2">
+                        <div className="px-6 pb-6 pt-0 flex gap-3">
                           <button 
                             onClick={() => setInspectingChurch(church)}
-                            className="flex-1 text-[10px] uppercase tracking-wider bg-white/5 hover:bg-white/10 text-belief-white py-2 rounded-xl border border-white/10 font-bold transition-all cursor-pointer text-center"
+                            className="flex-1 text-xs font-semibold bg-slate-50 hover:bg-slate-100 text-slate-700 py-2.5 rounded-xl border border-slate-200 transition-all text-center"
                           >
                             Ver Perfil
                           </button>
                           <button 
                             onClick={() => handleJoinChurch(church.name)}
-                            className="flex-1 text-[10px] uppercase tracking-wider bg-brand-1/10 hover:bg-brand-1 text-belief-white py-2 rounded-xl border border-white/10 font-bold transition-all cursor-pointer text-center"
+                            className="flex-1 text-xs font-semibold bg-primary/10 hover:bg-primary/20 text-primary py-2.5 rounded-xl border border-primary/20 transition-all text-center"
                           >
                             Vincularme
                           </button>
@@ -275,8 +280,8 @@ export function UserDashboard({ user }: { user?: any }) {
                     ))}
                   </div>
                 ) : (
-                  <div className="glass-panel p-6 rounded-3xl text-center opacity-70 max-w-xl border border-theme-border">
-                    <p className="font-sans text-xs">No hay iglesias registradas en la plataforma todavía. El Súper Admin principal puede agregar congregaciones desde su panel.</p>
+                  <div className="bg-white p-10 rounded-3xl text-center border border-dashed border-slate-300">
+                    <p className="font-sans text-slate-500 text-sm">No hay iglesias registradas en la plataforma todavía.</p>
                   </div>
                 )}
               </div>
@@ -286,40 +291,41 @@ export function UserDashboard({ user }: { user?: any }) {
           {activeTab === 'comunidad' && (
             <motion.div key="comunidad" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
               {!hasLinkedChurch || !linkedChurch ? (
-                 <div className="glass-panel p-12 rounded-3xl text-center max-w-2xl mx-auto border border-theme-border">
-                   <div className="w-20 h-20 bg-brand-1/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                     <Users className="w-10 h-10 text-brand-1" />
+                 <div className="bg-white p-12 rounded-3xl text-center max-w-2xl mx-auto border border-slate-200 shadow-sm relative overflow-hidden">
+                   <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
+                   <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6 ring-8 ring-primary/5">
+                     <Users className="w-8 h-8 text-primary" />
                    </div>
-                   <h2 className="font-serif text-3xl mb-4 font-bold uppercase tracking-wide text-brand-1">Aún no estás en una comunidad</h2>
-                   <p className="font-sans text-sm opacity-70 mb-8 max-w-md mx-auto">
-                     Para ver los boletines locales, anuncios y eventos de tu pastor y lideres, vincula tu iglesia participante.
+                   <h2 className="font-serif text-3xl mb-4 font-bold tracking-tight text-slate-900">Aún no estás en una comunidad</h2>
+                   <p className="font-sans text-sm text-slate-600 mb-10 max-w-md mx-auto leading-relaxed">
+                     Para ver los boletines locales, anuncios y eventos de tu pastor y lideres, vincula tu iglesia participante del directorio global.
                    </p>
                    
                    {churches.length > 0 ? (
-                     <div className="space-y-3 max-w-md mx-auto">
-                       <p className="text-xs uppercase tracking-wider opacity-60 font-bold">Selecciona una de las Iglesias Reales Registradas:</p>
-                       <div className="grid grid-cols-1 gap-2.5">
+                     <div className="space-y-4 max-w-lg mx-auto relative z-10">
+                       <p className="text-xs uppercase tracking-widest text-slate-500 font-bold">Selecciona una congregación:</p>
+                       <div className="grid grid-cols-1 gap-3">
                          {churches.map((c) => (
                            <div 
                              key={c.id}
-                             className="p-3 bg-white/5 border border-theme-border hover:bg-white/10 rounded-xl text-xs font-sans flex justify-between items-center transition-all"
+                             className="p-4 bg-slate-50 border border-slate-200 hover:border-primary/50 hover:shadow-sm rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center transition-all gap-4 text-left"
                            >
-                             <div className="text-left">
-                               <p className="font-bold text-belief-white">{c.name}</p>
-                               <span className="opacity-60 text-[10px]">{c.loc}</span>
+                             <div>
+                               <p className="font-bold text-slate-900 font-serif">{c.name}</p>
+                               <span className="text-slate-500 text-xs flex items-center gap-1 mt-1"><MapPin className="w-3 h-3"/> {c.loc}</span>
                              </div>
-                             <div className="flex gap-2">
+                             <div className="flex gap-2 w-full sm:w-auto">
                                <button 
                                  type="button"
                                  onClick={() => setInspectingChurch(c)}
-                                 className="px-2.5 py-1.5 bg-white/10 hover:bg-white/25 text-belief-white font-bold rounded-lg text-[10px] uppercase cursor-pointer"
+                                 className="flex-1 sm:flex-none px-4 py-2 bg-white border border-slate-200 text-slate-700 font-semibold rounded-xl text-xs transition-colors hover:bg-slate-100"
                                >
                                  Ver Perfil
                                </button>
                                <button 
                                  type="button"
                                  onClick={() => handleJoinChurch(c.name)}
-                                 className="px-2.5 py-1.5 bg-brand-1 hover:bg-brand-2 text-white font-bold rounded-lg text-[10px] uppercase cursor-pointer"
+                                 className="flex-1 sm:flex-none px-4 py-2 bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl text-xs transition-colors shadow-sm"
                                >
                                  Vincular
                                </button>
@@ -329,73 +335,73 @@ export function UserDashboard({ user }: { user?: any }) {
                        </div>
                      </div>
                    ) : (
-                     <div className="text-xs opacity-60 bg-black/25 p-4 rounded-xl max-w-md mx-auto">
-                       <p>Actualmente no hay iglesias registradas en la base de datos local. Por favor, asegúrate de ingresar como Súper Admin para registrar una.</p>
+                     <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 max-w-md mx-auto text-sm text-slate-500">
+                       <p>Actualmente no hay iglesias en el directorio. Revisa el mapa global.</p>
                      </div>
                    )}
                  </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                   {/* Local Feed */}
-                  <div className="md:col-span-2 space-y-6">
-                    <div className="bg-brand-1/5 p-4 rounded-2xl border border-brand-1/20 flex justify-between items-center flex-wrap gap-2">
-                      <div className="text-xs">
-                        <span className="opacity-60">Perteneces a la comunidad: </span>
-                        <strong className="text-brand-1 font-serif text-sm ml-1">{linkedChurch}</strong>
+                  <div className="lg:col-span-2 space-y-6">
+                    <div className="bg-blue-50 p-5 rounded-2xl border border-blue-100 flex justify-between items-center flex-wrap gap-4">
+                      <div>
+                        <span className="text-xs text-blue-600 font-semibold uppercase tracking-wide">Comunidad Activa:</span>
+                        <div className="text-slate-900 font-serif text-lg font-bold mt-1">{linkedChurch}</div>
                       </div>
-                      <button onClick={handleLeaveChurch} className="text-[10px] uppercase tracking-wider font-bold text-brand-2 hover:underline">Cambiar de Iglesia</button>
+                      <button onClick={handleLeaveChurch} className="text-xs bg-white border border-slate-200 px-4 py-2 rounded-xl font-semibold text-slate-600 hover:text-red-500 hover:border-red-500/50 transition-colors shadow-sm">Cambiar iglesia</button>
                     </div>
 
                     {localAnnouncements.length > 0 ? (
                       localAnnouncements.map((ann) => (
-                        <div key={ann.id} className="glass-panel p-8 rounded-3xl border border-theme-border relative">
-                          <div className="flex items-center gap-3 mb-6">
-                            <div className="w-10 h-10 rounded-full bg-brand-1/30 flex items-center justify-center text-brand-1 font-serif text-xl border border-brand-1/50 font-bold">
+                        <div key={ann.id} className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden group">
+                          <div className="flex items-center gap-4 mb-6">
+                            <div className="w-12 h-12 rounded-full bg-sky-100 flex items-center justify-center text-sky-600 font-serif text-xl border border-sky-200 font-bold shadow-sm">
                                {ann.author?.[0]?.toUpperCase() || 'P'}
                             </div>
                             <div>
-                              <h3 className="font-sans font-bold text-sm text-belief-white">{ann.author}</h3>
-                              <p className="text-[10px] opacity-40 uppercase tracking-widest">{ann.date} • Local</p>
+                              <h3 className="font-sans font-bold text-base text-slate-900">{ann.author}</h3>
+                              <p className="text-[11px] text-slate-500 font-medium uppercase tracking-widest mt-1">{ann.date} • Anuncio Local</p>
                             </div>
                           </div>
                           
-                          <h2 className="font-serif text-2xl mb-4 text-brand-1 font-semibold">{ann.title}</h2>
-                          <p className="font-sans text-sm opacity-80 leading-relaxed font-light mb-6 whitespace-pre-line">
+                          <h2 className="font-serif text-2xl mb-4 text-slate-900 font-bold leading-tight">{ann.title}</h2>
+                          <p className="font-sans text-sm text-slate-600 leading-relaxed max-w-3xl whitespace-pre-line mb-8">
                             {ann.content}
                           </p>
 
                           {/* Likes / Comments Loop */}
-                          <div className="flex flex-col gap-4 pt-4 border-t border-white/15">
+                          <div className="flex flex-col gap-5 pt-5 border-t border-slate-100">
                             <div className="flex items-center gap-6">
                               <button 
                                 onClick={() => handleLike(ann.id)} 
-                                className={`flex items-center gap-2 text-xs font-bold uppercase transition-colors cursor-pointer ${isPostLiked(ann.id) ? 'text-brand-3' : 'opacity-60 hover:opacity-100'}`}
+                                className={`flex items-center gap-2 text-sm font-semibold transition-colors cursor-pointer ${isPostLiked(ann.id) ? 'text-rose-500' : 'text-slate-500 hover:text-slate-700'}`}
                               >
-                                <Heart className={`w-4 h-4 ${isPostLiked(ann.id) ? 'fill-current' : ''}`} /> {ann.likes} Likes
+                                <Heart className={`w-4 h-4 ${isPostLiked(ann.id) ? 'fill-current text-rose-500' : ''}`} /> {ann.likes} Me gusta
                               </button>
                             </div>
 
                             {/* Comments block */}
-                            <div className="space-y-3 mt-2">
+                            <div className="space-y-3">
                               {ann.comments && ann.comments.map((comm, idx) => (
-                                <div key={idx} className="flex gap-2.5 bg-white/5 p-3 rounded-2xl text-xs max-w-xl font-light border border-white/5">
-                                  <span className="font-bold text-brand-2">{comm.author}:</span>
-                                  <span className="text-zinc-200">{comm.text}</span>
+                                <div key={idx} className="flex gap-3 bg-slate-50 p-4 rounded-xl text-sm border border-slate-100">
+                                  <span className="font-bold text-sky-600 shrink-0">{comm.author}</span>
+                                  <span className="text-slate-700 leading-relaxed">{comm.text}</span>
                                 </div>
                               ))}
                               
-                              <div className="relative max-w-xl flex gap-2 pt-2">
+                              <div className="relative flex gap-3 pt-2">
                                 <input 
                                   type="text" 
                                   value={newComment[ann.id] || ''}
                                   onChange={(e) => setNewComment(prev => ({ ...prev, [ann.id]: e.target.value }))}
-                                  placeholder="Escribe un mensaje de apoyo o amén..."
-                                  className="w-full bg-black/40 border border-white/10 rounded-full py-2 px-4 text-xs focus:outline-none focus:border-brand-1 transition-colors" 
+                                  placeholder="Escribe un mensaje o petición..."
+                                  className="w-full bg-slate-50 border border-slate-200 rounded-full py-2.5 px-5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400/50 transition-shadow" 
                                   onKeyDown={(e) => e.key === 'Enter' && handleAddComment(ann.id)}
                                 />
                                 <button 
                                   onClick={() => handleAddComment(ann.id)}
-                                  className="px-4 py-2 bg-brand-1 text-white font-bold text-xs rounded-full hover:bg-brand-2"
+                                  className="px-6 py-2.5 bg-sky-500 hover:bg-sky-600 text-white font-bold text-sm rounded-full transition-colors shrink-0 shadow-sm"
                                 >
                                   Enviar
                                 </button>
@@ -405,34 +411,35 @@ export function UserDashboard({ user }: { user?: any }) {
                         </div>
                       ))
                     ) : (
-                      <div className="glass-panel p-10 rounded-3xl text-center border border-theme-border text-zinc-400">
-                        <p className="font-serif text-lg mb-2">No hay mensajes específicos creados para esta congregación todavía.</p>
-                        <p className="text-xs opacity-60">Los administradores locales cargan recursos y eventos aquí.</p>
+                      <div className="bg-white p-10 rounded-3xl text-center border border-dashed border-slate-300">
+                        <MessageCircle className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+                        <p className="font-serif text-lg text-slate-600">Este feed local está tranquilo.</p>
+                        <p className="text-sm text-slate-500 mt-2">Pronto los líderes de la asamblea publicarán aquí.</p>
                       </div>
                     )}
                   </div>
 
                   {/* Sidebar stats/info */}
                   <div className="space-y-6">
-                    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="glass-panel p-6 rounded-3xl border border-theme-border">
+                    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
                       <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center gap-2">
-                          <Bell className="w-5 h-5 text-brand-4" />
-                          <h3 className="font-sans text-sm font-bold uppercase tracking-widest text-brand-4">Avisos Locales</h3>
+                          <Bell className="w-5 h-5 text-amber-500" />
+                          <h3 className="font-sans text-sm font-bold uppercase tracking-widest text-slate-800">Avisos Locales</h3>
                         </div>
                       </div>
                       <div className="space-y-4">
-                        <div className="border-b border-white/10 pb-4">
-                          <p className="font-sans text-xs mb-1 text-brand-2 font-medium">Campaña de abrigos de invierno</p>
-                          <span className="text-[10px] opacity-50 flex items-center gap-1"><Calendar className="w-3 h-3"/> Hasta el 30 de Nov.</span>
+                        <div className="border-b border-slate-100 pb-4">
+                          <p className="font-sans text-xs mb-1 text-slate-800 font-semibold">Campaña de abrigos de invierno</p>
+                          <span className="text-[10px] text-slate-500 flex items-center gap-1 font-medium"><Calendar className="w-3 h-3"/> Hasta el 30 de Nov.</span>
                         </div>
-                        <div className="border-b border-white/10 pb-4">
-                          <p className="font-sans text-xs mb-1 text-brand-2 font-medium">Ensayo general coro de Navidad</p>
-                          <span className="text-[10px] opacity-50 flex items-center gap-1"><Calendar className="w-3 h-3"/> Jueves 19:00</span>
+                        <div className="border-b border-slate-100 pb-4">
+                          <p className="font-sans text-xs mb-1 text-slate-800 font-semibold">Ensayo general coro de Navidad</p>
+                          <span className="text-[10px] text-slate-500 flex items-center gap-1 font-medium"><Calendar className="w-3 h-3"/> Jueves 19:00</span>
                         </div>
                         <div>
-                          <p className="font-sans text-xs mb-1 text-brand-2 font-medium">Estudio Bíblico General</p>
-                          <span className="text-[10px] opacity-50 flex items-center gap-1"><Calendar className="w-3 h-3"/> Próxima semana</span>
+                          <p className="font-sans text-xs mb-1 text-slate-800 font-semibold">Estudio Bíblico General</p>
+                          <span className="text-[10px] text-slate-500 flex items-center gap-1 font-medium"><Calendar className="w-3 h-3"/> Próxima semana</span>
                         </div>
                       </div>
                     </motion.div>
@@ -445,7 +452,7 @@ export function UserDashboard({ user }: { user?: any }) {
           {activeTab === 'diario' && (
             <motion.div key="diario" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
               <div className="-mt-24">
-                <Journal />
+                <Journal userId={userId} />
               </div>
             </motion.div>
           )}
@@ -458,18 +465,18 @@ export function UserDashboard({ user }: { user?: any }) {
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
               exit={{ opacity: 0 }} 
-              className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4"
+              className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
             >
               <motion.div 
-                initial={{ scale: 0.9, y: 20 }} 
+                initial={{ scale: 0.95, y: 10 }} 
                 animate={{ scale: 1, y: 0 }} 
-                exit={{ scale: 0.9, y: 20 }} 
-                className="glass-panel overflow-hidden max-w-2xl w-full rounded-3xl border border-theme-border relative max-h-[90vh] overflow-y-auto"
+                exit={{ scale: 0.95, y: 10 }} 
+                className="bg-white overflow-hidden max-w-2xl w-full rounded-3xl border border-slate-200 relative max-h-[90vh] overflow-y-auto shadow-2xl"
               >
                 {/* Header Close button */}
                 <button 
                   onClick={() => setInspectingChurch(null)}
-                  className="absolute top-4 right-4 z-20 bg-black/40 hover:bg-black/60 text-white rounded-full p-2 cursor-pointer transition-colors"
+                  className="absolute top-4 right-4 z-20 bg-black/20 hover:bg-black/40 text-white rounded-full p-2 cursor-pointer transition-colors backdrop-blur-md"
                 >
                   <span className="sr-only">Cerrar</span>
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -478,71 +485,71 @@ export function UserDashboard({ user }: { user?: any }) {
                 </button>
 
                 {/* Banner image/logo */}
-                <div className="h-56 relative bg-gradient-to-tr from-brand-1/30 to-brand-2/10 flex items-center justify-center text-center overflow-hidden border-b border-theme-border">
+                <div className="h-64 relative bg-slate-100 flex items-center justify-center text-center overflow-hidden border-b border-slate-200">
                   {inspectingChurch.logo ? (
                     <img src={inspectingChurch.logo} alt={inspectingChurch.name} className="w-full h-full object-cover" />
                   ) : (
-                    <div className="flex flex-col items-center gap-2 p-6">
-                      <MapPin className="w-16 h-16 text-brand-1/40 animate-pulse" />
-                      <span className="text-[11px] uppercase tracking-widest text-brand-2 bg-brand-2/10 px-3 py-1 rounded-full font-bold">Unida virtualmente</span>
+                    <div className="flex flex-col items-center gap-3 p-6 text-slate-400">
+                      <MapPin className="w-16 h-16 animate-pulse" />
+                      <span className="text-[11px] uppercase tracking-widest font-bold">Unida virtualmente</span>
                     </div>
                   )}
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/80 to-transparent p-6 text-left flex flex-col justify-end pt-16">
-                    <h3 className="font-serif text-3xl font-bold text-white tracking-wide">{inspectingChurch.name}</h3>
-                    <p className="text-xs text-brand-2 font-medium flex items-center gap-1.5 mt-1">
-                      <MapPin className="w-3.5 h-3.5" /> {inspectingChurch.address} ({inspectingChurch.loc})
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent p-8 text-left flex flex-col justify-end pt-24">
+                    <h3 className="font-serif text-3xl font-bold text-white tracking-tight mb-2">{inspectingChurch.name}</h3>
+                    <p className="text-sm text-sky-200 font-medium flex items-center gap-2">
+                      <MapPin className="w-4 h-4" /> {inspectingChurch.address} ({inspectingChurch.loc})
                     </p>
                   </div>
                 </div>
 
                 {/* Body details */}
-                <div className="p-8 space-y-6">
+                <div className="p-8 space-y-8">
                   {/* Mission & Vision */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="bg-white/5 border border-white/10 rounded-2xl p-5 relative overflow-hidden">
-                      <div className="absolute top-2 right-2 opacity-10 text-3xl font-serif text-brand-2">M</div>
-                      <h4 className="font-serif text-sm font-bold text-brand-2 uppercase tracking-wider mb-2">Nuestra Misión</h4>
-                      <p className="font-sans text-xs opacity-80 leading-relaxed font-light whitespace-pre-line italic text-zinc-100">
+                    <div className="bg-sky-50 border border-sky-100 rounded-2xl p-6 relative overflow-hidden">
+                      <div className="absolute top-2 right-2 opacity-10 text-4xl font-serif text-sky-600">M</div>
+                      <h4 className="font-serif text-sm font-bold text-sky-700 uppercase tracking-widest mb-3">Nuestra Misión</h4>
+                      <p className="font-sans text-sm text-sky-900/80 leading-relaxed whitespace-pre-line italic">
                         {inspectingChurch.mission || "Llevar la palabra de vida para conectar corazones y propósito, amparando espiritualmente bajo la fe y promoviendo el servicio social mutuo."}
                       </p>
                     </div>
 
-                    <div className="bg-white/5 border border-white/10 rounded-2xl p-5 relative overflow-hidden">
-                      <div className="absolute top-2 right-2 opacity-10 text-3xl font-serif text-brand-1">V</div>
-                      <h4 className="font-serif text-sm font-bold text-brand-1 uppercase tracking-wider mb-2">Nuestra Visión</h4>
-                      <p className="font-sans text-xs opacity-80 leading-relaxed font-light whitespace-pre-line italic text-zinc-100">
+                    <div className="bg-amber-50 border border-amber-100 rounded-2xl p-6 relative overflow-hidden">
+                      <div className="absolute top-2 right-2 opacity-10 text-4xl font-serif text-amber-600">V</div>
+                      <h4 className="font-serif text-sm font-bold text-amber-700 uppercase tracking-widest mb-3">Nuestra Visión</h4>
+                      <p className="font-sans text-sm text-amber-900/80 leading-relaxed whitespace-pre-line italic">
                         {inspectingChurch.vision || "Ser un faro de esperanza mundial y un puente interactivo capaz de proveer sanidad integral a las familias apoyándonos en la red divina."}
                       </p>
                     </div>
                   </div>
 
                   {/* General Stats */}
-                  <div className="flex justify-between items-center bg-black/25 p-4 rounded-xl text-xs border border-white/5">
+                  <div className="flex justify-between items-center bg-slate-50 p-6 rounded-2xl border border-slate-100">
                     <div className="text-center flex-1">
-                      <span className="block opacity-50 uppercase text-[9px] tracking-widest">Miembros</span>
-                      <span className="font-bold text-brand-3 text-lg font-serif">{inspectingChurch.members}</span>
+                      <span className="block text-slate-500 font-semibold uppercase text-[10px] tracking-widest mb-1">Miembros Acumulados</span>
+                      <span className="font-bold text-slate-900 text-2xl font-serif">{inspectingChurch.members}</span>
                     </div>
-                    <div className="w-px h-8 bg-white/10"></div>
+                    <div className="w-px h-12 bg-slate-200"></div>
                     <div className="text-center flex-1">
-                      <span className="block opacity-50 uppercase text-[9px] tracking-widest">Estado</span>
-                      <span className="font-bold text-brand-5 text-lg font-serif">Activa</span>
+                      <span className="block text-slate-500 font-semibold uppercase text-[10px] tracking-widest mb-1">Estado en Directorio</span>
+                      <span className="font-bold text-emerald-600 text-lg font-sans">Verificada ✓</span>
                     </div>
                   </div>
 
                   {/* Join / Bind action */}
-                  <div className="flex gap-4">
+                  <div className="flex gap-4 pt-4 border-t border-slate-100">
                     <button 
                       onClick={() => {
                         handleJoinChurch(inspectingChurch.name);
                         setInspectingChurch(null);
                       }}
-                      className="flex-1 bg-brand-1 hover:bg-brand-2 text-white font-bold py-3 px-6 rounded-full text-xs uppercase tracking-widest transition-all shadow-lg text-center cursor-pointer"
+                      className="flex-1 bg-primary hover:bg-primary/90 text-white font-bold py-4 px-6 rounded-xl text-sm uppercase tracking-wider transition-all shadow-sm text-center cursor-pointer"
                     >
                       {linkedChurch === inspectingChurch.name ? "Ya estás vinculado" : "Vincular a mi Perfil"}
                     </button>
                     <button 
                       onClick={() => setInspectingChurch(null)}
-                      className="bg-white/5 hover:bg-white/10 border border-white/10 font-bold py-3 px-6 rounded-full text-xs uppercase tracking-widest transition-all text-center cursor-pointer"
+                      className="bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 font-bold py-4 px-8 rounded-xl text-sm uppercase tracking-wider transition-all text-center cursor-pointer"
                     >
                       Cerrar
                     </button>
@@ -642,68 +649,73 @@ export function AdminDashboard({ user }: { user?: any }) {
     }, 2500);
   };
 
+
   if (!isApproved && !isPending) {
     return (
-      <div className="min-h-screen pt-32 px-4 pb-24 text-belief-white flex justify-center">
-        <div className="max-w-3xl w-full glass-panel p-8 rounded-3xl border-l-4 border-l-brand-2 border border-theme-border">
-          <h2 className="font-serif text-3xl mb-2 text-brand-2 font-bold uppercase tracking-wide">Crea tu Comunidad</h2>
-          <p className="font-sans text-sm opacity-70 mb-8">Por favor, registra los datos de tu congregación para que sean evaluados por la administración.</p>
+      <div className="min-h-screen pt-32 px-4 pb-24 bg-slate-50 text-slate-800 flex justify-center font-sans">
+        <div className="max-w-3xl w-full bg-white p-10 rounded-3xl border-t-8 border-t-primary border border-slate-200 shadow-xl shadow-slate-200/50 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
+          <h2 className="font-serif text-4xl mb-3 text-slate-900 font-bold tracking-tight">Crea tu Comunidad</h2>
+          <p className="font-sans text-base text-slate-600 mb-10 leading-relaxed max-w-xl">Por favor, registra los datos oficiales de tu congregación para que sean evaluados por la administración y formen parte del directorio global.</p>
           
-          <form onSubmit={submitChurchRegistration} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <form onSubmit={submitChurchRegistration} className="space-y-8 relative z-10">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-xs uppercase tracking-widest opacity-60 mb-2 font-bold">Nombre de la Iglesia *</label>
-                <input required type="text" value={regName} onChange={(e) => setRegName(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-brand-2 text-white" placeholder="Ej: Iglesia Vida Nueva" />
+                <label className="block text-xs uppercase tracking-widest text-slate-500 mb-2 font-bold">Nombre de la Iglesia *</label>
+                <input required type="text" value={regName} onChange={(e) => setRegName(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 px-5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-900 transition-shadow" placeholder="Ej: Iglesia Vida Nueva" />
               </div>
               <div>
-                <label className="block text-xs uppercase tracking-widest opacity-60 mb-2 font-bold">Ciudad / País *</label>
-                <input required type="text" value={regLoc} onChange={(e) => setRegLoc(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-brand-2 text-white" placeholder="Ej: Madrid, ES" />
+                <label className="block text-xs uppercase tracking-widest text-slate-500 mb-2 font-bold">Ciudad / País *</label>
+                <input required type="text" value={regLoc} onChange={(e) => setRegLoc(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 px-5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-900 transition-shadow" placeholder="Ej: Madrid, ES" />
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-xs uppercase tracking-widest opacity-60 mb-2 font-bold">Dirección Completa *</label>
-                <input required type="text" value={regAddress} onChange={(e) => setRegAddress(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-brand-2 text-white" placeholder="Ej: Calle Gran Vía 12" />
+                <label className="block text-xs uppercase tracking-widest text-slate-500 mb-2 font-bold">Dirección Completa *</label>
+                <input required type="text" value={regAddress} onChange={(e) => setRegAddress(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 px-5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-900 transition-shadow" placeholder="Ej: Calle Mayor 12" />
               </div>
               <div>
-                <label className="block text-xs uppercase tracking-widest opacity-60 mb-2 font-bold">Pastores / Líderes Principales *</label>
-                <input required type="text" value={regPastors} onChange={(e) => setRegPastors(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-brand-2 text-white" placeholder="Ej: Ps. Juan y María" />
+                <label className="block text-xs uppercase tracking-widest text-slate-500 mb-2 font-bold">Pastores / Líderes Principales *</label>
+                <input required type="text" value={regPastors} onChange={(e) => setRegPastors(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 px-5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-900 transition-shadow" placeholder="Ej: Ps. Juan y María" />
               </div>
             </div>
 
-            <div className="p-5 bg-white/5 border border-white/10 rounded-2xl">
-              <label className="block text-xs uppercase tracking-widest opacity-60 mb-3 font-bold">Logo o Foto de Portada (Opcional)</label>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+            <div className="p-6 bg-slate-50 border border-slate-200 rounded-3xl">
+              <label className="block text-xs uppercase tracking-widest text-slate-600 mb-4 font-bold">Logo o Foto de Portada (Opcional)</label>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
                 <div className="md:col-span-2 flex flex-col gap-2">
-                  <div className="flex items-center gap-2">
-                    <button type="button" onClick={() => fileInputRef.current?.click()} className="bg-brand-1/25 hover:bg-brand-1 text-belief-white px-4 py-2 rounded-lg text-[10px] uppercase font-bold tracking-wider transition-colors cursor-pointer flex items-center gap-1.5 py-2">
-                      <ImagePlus className="w-3.5 h-3.5" /> Subir archivo de imagen
+                  <div className="flex items-center gap-3">
+                    <button type="button" onClick={() => fileInputRef.current?.click()} className="bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 px-6 py-3 rounded-xl text-xs uppercase font-bold tracking-wider transition-colors cursor-pointer flex items-center justify-center gap-2 w-full md:w-auto shadow-sm">
+                      <ImagePlus className="w-4 h-4" /> Subir Fotografía
                     </button>
                     <input type="file" ref={fileInputRef} onChange={handleLogoUpload} accept="image/*" className="hidden" />
                   </div>
+                  <p className="text-[10px] text-slate-400 mt-2">Formatos recomendados: JPG, PNG. Tamaño máximo 5MB.</p>
                 </div>
                 {regLogo && (
-                  <div className="w-full h-24 rounded-xl border border-white/10 overflow-hidden">
+                  <div className="w-full h-28 rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
                     <img src={regLogo} alt="Preview" className="w-full h-full object-cover" />
                   </div>
                 )}
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-xs uppercase tracking-widest opacity-60 mb-2 font-bold text-brand-2">Misión *</label>
-                <textarea required rows={3} value={regMission} onChange={(e) => setRegMission(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded-xl py-3 px-4 text-xs focus:outline-none focus:border-brand-2 text-white resize-none" placeholder="Propósito central..." />
+                <label className="block text-xs uppercase tracking-widest text-sky-600 mb-2 font-bold">Misión *</label>
+                <textarea required rows={4} value={regMission} onChange={(e) => setRegMission(e.target.value)} className="w-full bg-sky-50/50 border border-sky-100 rounded-xl py-3.5 px-5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/30 text-slate-900 resize-none transition-shadow" placeholder="Propósito central..." />
               </div>
               <div>
-                <label className="block text-xs uppercase tracking-widest opacity-60 mb-2 font-bold text-brand-1">Visión *</label>
-                <textarea required rows={3} value={regVision} onChange={(e) => setRegVision(e.target.value)} className="w-full bg-black/40 border border-white/20 rounded-xl py-3 px-4 text-xs focus:outline-none focus:border-brand-2 text-white resize-none" placeholder="Visión a futuro..." />
+                <label className="block text-xs uppercase tracking-widest text-amber-600 mb-2 font-bold">Visión *</label>
+                <textarea required rows={4} value={regVision} onChange={(e) => setRegVision(e.target.value)} className="w-full bg-amber-50/50 border border-amber-100 rounded-xl py-3.5 px-5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/30 text-slate-900 resize-none transition-shadow" placeholder="Visión a futuro..." />
               </div>
             </div>
 
-            <button type="submit" className="w-full bg-brand-2 hover:bg-brand-3 text-stone-900 py-3.5 rounded-full text-xs uppercase tracking-widest font-bold transition-all cursor-pointer shadow-lg shadow-brand-2/15">
-              Enviar Solicitud de Registro
-            </button>
+            <div className="pt-2">
+              <button type="submit" className="w-full bg-slate-900 hover:bg-slate-800 text-white py-4 rounded-full text-sm uppercase tracking-widest font-bold transition-colors cursor-pointer shadow-md">
+                Enviar Solicitud de Registro
+              </button>
+            </div>
           </form>
         </div>
       </div>
@@ -712,92 +724,99 @@ export function AdminDashboard({ user }: { user?: any }) {
 
   if (isPending && !isApproved) {
     return (
-      <div className="min-h-screen pt-32 px-4 pb-24 text-belief-white flex justify-center text-center">
-        <div className="max-w-xl w-full glass-panel p-10 rounded-3xl border-l-4 border-l-brand-1 border border-theme-border">
-          <h2 className="font-serif text-3xl mb-4 text-brand-1 font-bold uppercase tracking-wide">Solicitud en Proceso</h2>
-          <p className="font-sans text-sm opacity-80 mb-6 font-light">Tu congregación está siendo evaluada por la administración. Te notificaremos una vez que sea aprobada y conectada al Directorio Global de Believe.</p>
+      <div className="min-h-screen pt-32 px-4 pb-24 bg-slate-50 text-slate-800 flex justify-center text-center font-sans">
+        <div className="max-w-xl w-full bg-white p-12 rounded-3xl border border-slate-200 shadow-xl relative overflow-hidden">
+          <div className="absolute inset-0 bg-primary/5"></div>
+          <div className="relative z-10 flex flex-col items-center">
+            <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-6 ring-8 ring-white">
+              <Compass className="w-10 h-10 text-primary animate-pulse" />
+            </div>
+            <h2 className="font-serif text-3xl mb-4 text-slate-900 font-bold tracking-tight">Solicitud en Proceso</h2>
+            <p className="font-sans text-base text-slate-600 mb-6 leading-relaxed">Tu congregación está siendo evaluada por la administración. Te notificaremos una vez que sea aprobada y conectada al Directorio Global de Believe.</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen pt-32 px-4 pb-24 text-belief-white">
+    <div className="min-h-screen pt-32 px-4 pb-24 bg-slate-50 text-slate-800 font-sans">
       <div className="max-w-6xl mx-auto">
-         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-4 border-b border-theme-border pb-6">
+         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6 border-b border-slate-200 pb-8 relative">
           <div>
-            <h1 className="font-serif text-3xl md:text-4xl text-brand-3 mb-2 font-bold uppercase tracking-wide">Panel de Administración Local</h1>
-            <p className="font-sans font-light opacity-70">
-              Congregación actual: <strong className="text-brand-1">{localChurchName}</strong>
+            <h1 className="font-serif text-3xl md:text-4xl text-slate-900 mb-3 font-bold tracking-tight">Panel Pastoral Local</h1>
+            <p className="font-sans text-slate-600 text-base">
+              Administrando comunidad: <strong className="text-primary font-serif font-bold text-lg ml-1">{localChurchName}</strong>
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <button onClick={() => setShowEventForm(!showEventForm)} className="bg-brand-1 hover:bg-brand-2 text-white px-6 py-3 rounded-full text-xs uppercase tracking-widest font-bold transition-colors cursor-pointer">
-              {showEventForm ? 'Cancelar' : 'Nuevo Evento / Boletín'}
+            <button onClick={() => setShowEventForm(!showEventForm)} className={`${showEventForm ? 'bg-slate-200 text-slate-700 hover:bg-slate-300' : 'bg-primary text-white hover:bg-primary/90'} px-6 py-3.5 rounded-full text-xs uppercase tracking-widest font-bold transition-colors cursor-pointer shadow-sm flex items-center gap-2`}>
+              {showEventForm ? '× Cancelar' : '+ Crear Anuncio / Evento'}
             </button>
           </div>
         </motion.div>
 
         <AnimatePresence>
           {showEventForm && (
-            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="mb-8 overflow-hidden">
-              <div className="glass-panel p-8 rounded-3xl border-l-4 border-l-brand-1 border border-theme-border">
-                <h3 className="font-serif text-2xl mb-6 text-brand-1 font-semibold">Crear Evento o Boletín Local</h3>
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="mb-10 overflow-hidden">
+              <div className="bg-white p-8 md:p-10 rounded-3xl border border-slate-200 shadow-lg relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mr-20 -mt-20"></div>
+                <h3 className="font-serif text-2xl mb-8 text-slate-900 font-bold relative z-10 flex items-center gap-3"><Send className="w-5 h-5 text-primary" /> Redactar Comunicado a la Iglesia</h3>
                 
                 {pushedOk ? (
-                  <div className="bg-green-500/10 border border-green-500/20 text-green-500 p-4 rounded-xl flex items-center gap-2 mb-4 font-bold text-xs uppercase tracking-wide">
-                    <Check className="w-5 h-5" /> ¡Anuncio / Boletín local publicado con éxito! Sincronizado en el Feed de la comunidad.
+                  <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 p-5 rounded-2xl flex items-center gap-3 mb-8 font-bold text-sm tracking-wide relative z-10">
+                    <div className="bg-emerald-100 p-1.5 rounded-full"><Check className="w-5 h-5 text-emerald-600" /></div> ¡Anuncio u boletín publicado con éxito directamente al feed de los miembros!
                   </div>
                 ) : null}
 
-                <form onSubmit={handlePostLocalSubmit} className="space-y-5">
+                <form onSubmit={handlePostLocalSubmit} className="space-y-6 relative z-10">
                   <div>
-                    <label className="block text-xs uppercase tracking-widest opacity-60 mb-2 font-bold">Título del Anuncio</label>
+                    <label className="block text-xs uppercase tracking-widest text-slate-500 mb-2 font-bold">Título del Mensaje</label>
                     <input 
                       required
                       type="text" 
                       value={postTitle}
                       onChange={(e) => setPostTitle(e.target.value)}
-                      className="w-full bg-black/40 border border-white/20 rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-brand-1 text-white" 
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 px-5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-900 transition-shadow" 
                       placeholder="Ej: Gran Campaña de Solidaridad de Invierno"
                     />
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-xs uppercase tracking-widest opacity-60 mb-2 font-bold">Autor / Firma</label>
+                      <label className="block text-xs uppercase tracking-widest text-slate-500 mb-2 font-bold">Autor / Firma Visible</label>
                       <input 
                         required
                         type="text" 
                         value={postAuthor}
                         onChange={(e) => setPostAuthor(e.target.value)}
-                        className="w-full bg-black/40 border border-white/20 rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-brand-1 text-white" 
-                        placeholder="Ej: Pastor Carlos Mendoza / Liderazgo"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 px-5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-900 transition-shadow" 
+                        placeholder="Ej: Pastor General / Liderazgo de Jóvenes"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs uppercase tracking-widest opacity-60 mb-2 font-bold">Congregación Designada</label>
+                      <label className="block text-xs uppercase tracking-widest text-slate-500 mb-2 font-bold">Distribución Exclusiva Para:</label>
                       <input 
                         disabled
                         type="text" 
                         value={localChurchName}
-                        className="w-full bg-black/20 border border-white/10 rounded-xl py-3 px-4 text-sm text-stone-400 cursor-not-allowed" 
+                        className="w-full bg-slate-100 border border-slate-200 rounded-xl py-3.5 px-5 text-sm text-slate-500 cursor-not-allowed font-medium" 
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs uppercase tracking-widest opacity-60 mb-2 font-bold">Descripción y Cuerpo del Mensaje</label>
+                    <label className="block text-xs uppercase tracking-widest text-slate-500 mb-2 font-bold">Cuerpo del Mensaje o Detalles del Evento</label>
                     <textarea 
                       required
-                      rows={4} 
+                      rows={5} 
                       value={postContent}
                       onChange={(e) => setPostContent(e.target.value)}
-                      className="w-full bg-black/40 border border-white/20 rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-brand-1 resize-none text-white font-sans" 
-                      placeholder="Escribe el mensaje motivacional, pasaje o aviso..."
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 px-5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none text-slate-900 font-sans transition-shadow" 
+                      placeholder="Escribe el propósito de la publicación, cita bíblica, fechas o información importante..."
                     />
                   </div>
-                  <div className="flex gap-4 items-center">
-                    <button type="submit" className="bg-brand-1 hover:bg-brand-2 text-white px-8 py-3 rounded-full text-xs uppercase tracking-widest font-bold transition-all flex items-center gap-2 cursor-pointer shadow-lg shadow-brand-1/25">
-                      <Send className="w-4 h-4" /> Publicar Boletín Local
+                  <div className="pt-2">
+                    <button type="submit" className="bg-slate-900 hover:bg-slate-800 text-white px-10 py-4 rounded-full text-sm font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-3 w-full md:w-auto shadow-md">
+                       Publicar Ahora <ChevronRight className="w-4 h-4" />
                     </button>
                   </div>
                 </form>
@@ -806,38 +825,47 @@ export function AdminDashboard({ user }: { user?: any }) {
           )}
         </AnimatePresence>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
-           <div className="glass-panel p-6 rounded-2xl border border-theme-border">
-             <h4 className="text-xs uppercase tracking-widest opacity-60 mb-2 font-sans text-brand-1">Miembros Oficiales</h4>
-             <div className="text-3xl font-serif text-brand-4 font-bold">{localMembersCount}</div>
-             <p className="text-[10px] text-brand-5 mt-2">+12 esta semana</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
+           <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden group">
+             <div className="absolute -right-4 -bottom-4 bg-sky-50 w-24 h-24 rounded-full group-hover:scale-125 transition-transform duration-500"></div>
+             <h4 className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-3 relative z-10">Miembros Activos</h4>
+             <div className="text-3xl sm:text-4xl font-serif text-slate-900 font-bold relative z-10">{localMembersCount}</div>
+             <p className="text-xs text-emerald-600 mt-2 font-semibold bg-emerald-50 inline-block px-2 py-1 rounded-md relative z-10">+12% este mes</p>
            </div>
-           <div className="glass-panel p-6 rounded-2xl border border-theme-border">
-             <h4 className="text-xs uppercase tracking-widest opacity-60 mb-2 font-sans text-brand-1">Grupos de Estudio</h4>
-             <div className="text-3xl font-serif text-brand-3 font-bold">24</div>
-             <p className="text-[10px] opacity-50 mt-2">Activos en red</p>
+           <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden group">
+             <div className="absolute -right-4 -bottom-4 bg-amber-50 w-24 h-24 rounded-full group-hover:scale-125 transition-transform duration-500"></div>
+             <h4 className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-3 relative z-10">Células / Grupos</h4>
+             <div className="text-3xl sm:text-4xl font-serif text-slate-900 font-bold relative z-10">24</div>
+             <p className="text-xs text-slate-500 mt-2 font-medium relative z-10">Activos en plataforma</p>
            </div>
-           <div className="glass-panel p-6 rounded-2xl border border-theme-border">
-             <h4 className="text-xs uppercase tracking-widest opacity-60 mb-2 font-sans text-brand-1">Peticiones de Oración</h4>
-             <div className="text-3xl font-serif text-brand-2 font-bold">{prayersCount}</div>
+           <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden group">
+             <div className="absolute -right-4 -bottom-4 bg-rose-50 w-24 h-24 rounded-full group-hover:scale-125 transition-transform duration-500"></div>
+             <h4 className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-3 relative z-10">Peticiones de Oración</h4>
+             <div className="text-3xl sm:text-4xl font-serif text-slate-900 font-bold relative z-10">{prayersCount}</div>
+             <p className="text-xs text-rose-500 mt-2 font-semibold relative z-10 tracking-tight">Atención requerida</p>
            </div>
-           <div className="glass-panel p-6 rounded-2xl border border-theme-border">
-             <h4 className="text-xs uppercase tracking-widest opacity-60 mb-2 font-sans text-brand-1">Asistencia</h4>
-             <div className="text-3xl font-serif text-brand-5 font-bold">85%</div>
-             <p className="text-[10px] opacity-50 mt-2">Promedio de servicios</p>
+           <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden group">
+             <div className="absolute -right-4 -bottom-4 bg-indigo-50 w-24 h-24 rounded-full group-hover:scale-125 transition-transform duration-500"></div>
+             <h4 className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-3 relative z-10">Retención Semanal</h4>
+             <div className="text-3xl sm:text-4xl font-serif text-slate-900 font-bold relative z-10">85%</div>
+             <p className="text-xs text-slate-500 mt-2 font-medium relative z-10">Promedio general</p>
            </div>
         </div>
 
-        <div className="glass-panel p-8 rounded-3xl border border-theme-border">
-          <h3 className="font-serif text-xl mb-6 text-brand-3 font-bold uppercase tracking-wide">Registro de Actividad de la Comunidad</h3>
-          <div className="space-y-4 font-sans font-light text-sm">
-             <div className="flex justify-between items-center py-3 border-b border-white/5">
-               <span className="opacity-80">Nuevo hermano registrado en la plataforma hoy vinculándose a tu iglesia.</span>
-               <span className="opacity-50 text-xs">Hace 5 min</span>
+        <div className="bg-white p-10 rounded-3xl border border-slate-200 shadow-sm max-w-4xl">
+          <h3 className="font-serif text-xl mb-8 text-slate-900 font-bold flex items-center gap-2">Registro de Actividad Reciente</h3>
+          <div className="space-y-2">
+             <div className="flex justify-between items-center p-4 hover:bg-slate-50 rounded-2xl transition-colors border border-transparent hover:border-slate-100">
+               <span className="text-sm text-slate-700 font-medium leading-relaxed">Nuevo hermano se ha vinculado exitosamente al directorio local.</span>
+               <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider shrink-0 bg-slate-50 px-2.5 py-1 rounded-md">Hace 5 min</span>
              </div>
-             <div className="flex justify-between items-center py-3 border-b border-white/5">
-               <span className="opacity-80">Pastor {user?.email || 'Principal'} editó detalles de ubicación de oficina.</span>
-               <span className="opacity-50 text-xs">Hace 2 horas</span>
+             <div className="flex justify-between items-center p-4 hover:bg-slate-50 rounded-2xl transition-colors border border-transparent hover:border-slate-100">
+               <span className="text-sm text-slate-700 font-medium leading-relaxed">Pastor {user?.email || 'Principal'} programó Ensayo General de Coro para el día Jueves.</span>
+               <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider shrink-0 bg-slate-50 px-2.5 py-1 rounded-md">Hace 2 horas</span>
+             </div>
+             <div className="flex justify-between items-center p-4 hover:bg-slate-50 rounded-2xl transition-colors border border-transparent hover:border-slate-100">
+               <span className="text-sm text-slate-700 font-medium leading-relaxed">Actualización masiva de estatutos misioneros enviada a la comunidad.</span>
+               <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider shrink-0 bg-slate-50 px-2.5 py-1 rounded-md">Hace 1 día</span>
              </div>
           </div>
         </div>
@@ -877,16 +905,13 @@ export function SuperAdminDashboard() {
     }
   };
 
-  // Dynamic statistics
-  const [totalChurchesCount, setTotalChurchesCount] = useState(() => getLocalChurches().length);
-  const [usersCount, setUsersCount] = useState(() => {
-    const saved = localStorage.getItem('belief-stats-users-count');
-    return saved ? Number(saved) : 15420;
-  });
-  const [revenue, setRevenue] = useState(() => {
-    const saved = localStorage.getItem('belief-stats-revenue');
-    return saved ? Number(saved) : 12450;
-  });
+  // Dynamic statistics calculated from real data
+  const [registeredChurchesList, setRegisteredChurchesList] = useState<Church[]>(() => getLocalChurches());
+  const [allAnnouncements, setAllAnnouncements] = useState<Announcement[]>(() => getLocalAnnouncements());
+  
+  const totalChurchesCount = registeredChurchesList.length;
+  const usersCount = registeredChurchesList.reduce((acc, church) => acc + (church.members || 0), 0) + 1; // Real registered numbers + super admin
+  const prayersCount = allAnnouncements.reduce((acc, ann) => acc + (ann.likes || 0) + (ann.prayers || 0), 0); // Real prayers over feed
 
   // Dynamic Pending Requests list
   const [pendingChurches, setPendingChurches] = useState<{id: string, name: string, email: string, loc: string, address: string, logo?: string, mission?: string, vision?: string, pastors?: string}[]>(() => {
@@ -894,16 +919,6 @@ export function SuperAdminDashboard() {
     if (saved) return JSON.parse(saved);
     return [];
   });
-
-  const [registeredChurchesList, setRegisteredChurchesList] = useState<Church[]>(() => getLocalChurches());
-
-  useEffect(() => {
-    localStorage.setItem('belief-stats-users-count', String(usersCount));
-  }, [usersCount]);
-
-  useEffect(() => {
-    localStorage.setItem('belief-stats-revenue', String(revenue));
-  }, [revenue]);
 
   useEffect(() => {
     localStorage.setItem('belief-pending-churches', JSON.stringify(pendingChurches));
@@ -921,6 +936,7 @@ export function SuperAdminDashboard() {
       date: 'Hace un momento'
     });
 
+    setAllAnnouncements(getLocalAnnouncements());
     setGlobalTitle('');
     setGlobalContent('');
     setGlobalSuccess(true);
@@ -934,7 +950,7 @@ export function SuperAdminDashboard() {
     e.preventDefault();
     if (!regName.trim() || !regLoc.trim() || !regAddress.trim()) return;
 
-    const registered = addLocalChurch({
+    addLocalChurch({
       name: regName,
       loc: regLoc,
       address: regAddress,
@@ -945,7 +961,6 @@ export function SuperAdminDashboard() {
     });
 
     setRegisteredChurchesList(getLocalChurches());
-    setTotalChurchesCount(getLocalChurches().length);
 
     setRegName('');
     setRegLoc('');
@@ -983,9 +998,7 @@ export function SuperAdminDashboard() {
     setPendingChurches(updatedPending);
 
     // 3. Increment counters
-    setTotalChurchesCount(getLocalChurches().length);
     setRegisteredChurchesList(getLocalChurches());
-    setRevenue(prev => prev + 150); // Simulating addition to revenue streams
   };
 
   const handleRejectPending = (id: string, email: string) => {
@@ -999,17 +1012,16 @@ export function SuperAdminDashboard() {
     const updated = currentList.filter(c => c.id !== id);
     saveLocalChurches(updated);
     setRegisteredChurchesList(updated);
-    setTotalChurchesCount(updated.length);
   };
 
   return (
-    <div className="min-h-screen pt-32 px-4 pb-24 text-belief-white">
+    <div className="min-h-screen pt-32 px-4 pb-24 text-slate-800 dark:text-slate-100 font-sans">
       <div className="max-w-6xl mx-auto">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-4 border-b border-theme-border pb-6">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-4 border-b border-slate-200 dark:border-slate-800 pb-6">
           <div>
-            <span className="bg-brand-3/20 text-brand-3 px-3 py-1 rounded-full text-[10px] uppercase tracking-widest font-bold inline-block mb-2">Panel Autoritativo</span>
-            <h1 className="font-serif text-3xl md:text-4xl text-brand-3 font-bold uppercase tracking-wide">Consola de Creador</h1>
-            <p className="font-sans font-light opacity-70">Control total del ecosistema de fe global</p>
+            <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-[10px] uppercase tracking-widest font-bold inline-block mb-2">Panel Autoritativo</span>
+            <h1 className="font-serif text-3xl md:text-4xl text-slate-900 dark:text-white font-bold tracking-tight">Consola de Creador</h1>
+            <p className="font-sans font-light opacity-70">Control total de la plataforma Believe</p>
           </div>
           <div className="flex flex-wrap gap-3">
             <button 
@@ -1017,18 +1029,18 @@ export function SuperAdminDashboard() {
                 setShowRegisterChurchForm(!showRegisterChurchForm);
                 setShowGlobalPost(false);
               }} 
-              className="glass-panel px-6 py-3 rounded-full text-xs uppercase tracking-widest font-bold hover:border-brand-2 transition-colors cursor-pointer border border-theme-border"
+              className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 px-6 py-2.5 rounded-xl font-bold transition-all text-sm shadow-sm cursor-pointer"
             >
-              {showRegisterChurchForm ? 'Cancelar' : 'Registrar Iglesia'}
+              {showRegisterChurchForm ? 'Cancelar' : 'Alta de Comunidad'}
             </button>
             <button 
               onClick={() => {
                 setShowGlobalPost(!showGlobalPost);
                 setShowRegisterChurchForm(false);
               }} 
-              className="bg-brand-1 hover:bg-brand-2 text-white px-6 py-3 rounded-full text-xs uppercase tracking-widest font-bold transition-colors cursor-pointer"
+              className="bg-primary hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-bold transition-all text-sm shadow-md cursor-pointer flex items-center gap-2"
             >
-              {showGlobalPost ? 'Cancelar' : 'Anuncio Global'}
+              {showGlobalPost ? 'Cancelar' : <><Send className="w-4 h-4"/> Anuncio Global</>}
             </button>
           </div>
         </motion.div>
@@ -1037,41 +1049,42 @@ export function SuperAdminDashboard() {
         <AnimatePresence>
           {showGlobalPost && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="mb-8 overflow-hidden">
-              <div className="glass-panel p-8 rounded-3xl border-l-4 border-l-brand-3 border border-theme-border">
-                <h3 className="font-serif text-2xl mb-6 text-brand-3 flex items-center gap-2 font-bold uppercase tracking-wide">Publicar en todos los Feeds (Comunicado Global)</h3>
+              <div className="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-2 h-full bg-primary"></div>
+                <h3 className="font-serif text-2xl mb-6 text-slate-900 dark:text-white flex items-center gap-2 font-bold tracking-tight">Comunicado Global</h3>
                 
                 {globalSuccess && (
-                  <div className="bg-green-500/10 border border-green-500/20 text-green-500 p-4 rounded-xl flex items-center gap-2 mb-4 font-bold text-xs uppercase tracking-wide">
-                    <Check className="w-5 h-5 animate-pulse" /> ¡Su boletín global ha sido publicado con éxito y se encuentra sincronizado en tiempo real!
+                  <div className="bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400 p-4 rounded-xl flex items-center gap-2 mb-6 font-semibold text-sm">
+                    <Check className="w-5 h-5 animate-pulse" /> Boletín global publicado y sincronizado.
                   </div>
                 )}
 
                 <form onSubmit={handlePostGlobalSubmit} className="space-y-5">
                   <div>
-                    <label className="block text-xs uppercase tracking-widest opacity-60 mb-2 font-bold">Título del Anuncio Global</label>
+                    <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">Título del Anuncio Global</label>
                     <input 
                       required
                       type="text" 
                       value={globalTitle}
                       onChange={(e) => setGlobalTitle(e.target.value)}
-                      className="w-full bg-black/40 border border-white/20 rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-brand-3 text-white" 
-                      placeholder="Ej: Mensaje Pastoral Conjunto: Bienvenida Oficial 2026"
+                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-shadow" 
+                      placeholder="Ej: Bienvenida Oficial 2026"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs uppercase tracking-widest opacity-60 mb-2 font-bold">Cuerpo Oficial del Mensaje</label>
+                    <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">Cuerpo del Mensaje</label>
                     <textarea 
                       required
                       rows={5} 
                       value={globalContent}
                       onChange={(e) => setGlobalContent(e.target.value)}
-                      className="w-full bg-black/40 border border-white/20 rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-brand-3 resize-none text-white font-sans whitespace-pre-line" 
-                      placeholder="Escribe el boletín fidedigno de alcance global..."
+                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-shadow resize-none" 
+                      placeholder="Escribe el boletín..."
                     />
                   </div>
-                  <div className="flex gap-4 items-center">
-                    <button type="submit" className="bg-brand-3 hover:bg-brand-4 text-black px-8 py-3 rounded-full text-xs uppercase tracking-widest font-bold transition-colors flex items-center gap-2 shadow-lg shadow-brand-3/20">
-                      <Send className="w-4 h-4" /> Publicar Oficialmente
+                  <div className="flex justify-end pt-2">
+                    <button type="submit" className="bg-primary hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-semibold transition-all flex items-center gap-2 shadow-md">
+                      Publicar Oficialmente
                     </button>
                   </div>
                 </form>
@@ -1084,143 +1097,90 @@ export function SuperAdminDashboard() {
         <AnimatePresence>
           {showRegisterChurchForm && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="mb-8 overflow-hidden">
-              <div className="glass-panel p-8 rounded-3xl border-l-4 border-l-brand-2 border border-theme-border">
-                <h3 className="font-serif text-2xl mb-6 text-brand-2 flex items-center gap-2 font-bold uppercase tracking-wide">Alta Oficial de Congregación Activa</h3>
+              <div className="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-2 h-full bg-sky-400"></div>
+                <h3 className="font-serif text-2xl mb-6 text-slate-900 dark:text-white flex items-center gap-2 font-bold tracking-tight">Alta de Congregación Activa</h3>
                 
                 {churchSuccess && (
-                  <div className="bg-green-500/10 border border-green-500/20 text-green-500 p-4 rounded-xl flex items-center gap-2 mb-4 font-bold text-xs uppercase tracking-wide">
-                    <Check className="w-5 h-5" /> ¡Iglesia participante dada de alta e integrada en el mapa con éxito!
+                  <div className="bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400 p-4 rounded-xl flex items-center gap-2 mb-6 font-semibold text-sm">
+                    <Check className="w-5 h-5" /> ¡Iglesia participante dada de alta e integrada en el directorio!
                   </div>
                 )}
 
                 <form onSubmit={handleRegisterChurchSubmit} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>
-                      <label className="block text-xs uppercase tracking-widest opacity-60 mb-2 font-bold">Nombre de la Iglesia</label>
+                      <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">Nombre de la Iglesia</label>
                       <input 
                         required
                         type="text" 
                         value={regName}
                         onChange={(e) => setRegName(e.target.value)}
-                        className="w-full bg-black/40 border border-white/20 rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-brand-2 text-white" 
+                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400/50" 
                         placeholder="Ej: Iglesia Vida Nueva"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs uppercase tracking-widest opacity-60 mb-2 font-bold">Ciudad / País</label>
+                      <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">Ciudad / País</label>
                       <input 
                         required
                         type="text" 
                         value={regLoc}
                         onChange={(e) => setRegLoc(e.target.value)}
-                        className="w-full bg-black/40 border border-white/20 rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-brand-2 text-white" 
+                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400/50" 
                         placeholder="Ej: Madrid, ES"
                       />
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>
-                      <label className="block text-xs uppercase tracking-widest opacity-60 mb-2 font-bold">Dirección Completa</label>
+                      <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">Dirección Completa</label>
                       <input 
                         required
                         type="text" 
                         value={regAddress}
                         onChange={(e) => setRegAddress(e.target.value)}
-                        className="w-full bg-black/40 border border-white/20 rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-brand-2 text-white" 
+                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400/50" 
                         placeholder="Ej: Calle Gran Vía 12, Centro"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs uppercase tracking-widest opacity-60 mb-2 font-bold">Miembros Sugeridos</label>
+                      <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">Miembros Registrados</label>
                       <input 
                         required
                         type="number" 
                         value={regMembers}
                         onChange={(e) => setRegMembers(Number(e.target.value))}
-                        className="w-full bg-black/40 border border-white/20 rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-brand-2 text-white" 
+                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400/50" 
                       />
                     </div>
                   </div>
 
-                  {/* LOGO AND PHOTO UPLOADER */}
-                  <div className="p-5 bg-white/5 border border-white/10 rounded-2xl">
-                    <label className="block text-xs uppercase tracking-widest opacity-60 mb-3 font-bold">Logo o Foto de Portada</label>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
-                      <div className="md:col-span-2 flex flex-col gap-2">
-                        <input 
-                          type="text" 
-                          value={regLogo}
-                          onChange={(e) => setRegLogo(e.target.value)}
-                          placeholder="Pega la URL del logo/foto de portada o súbela como archivo" 
-                          className="w-full bg-black/40 border border-white/20 rounded-xl py-3 px-4 text-xs focus:outline-none focus:border-brand-2 text-white" 
-                        />
-                        <div className="flex items-center gap-2">
-                          <button 
-                            type="button" 
-                            onClick={() => fileInputRef.current?.click()}
-                            className="bg-brand-1/25 hover:bg-brand-1 text-belief-white px-4 py-2 rounded-lg text-[10px] uppercase font-bold tracking-wider transition-colors cursor-pointer flex items-center gap-1.5"
-                          >
-                            <ImagePlus className="w-3.5 h-3.5" /> Subir archivo de imagen
-                          </button>
-                          <span className="text-[10px] opacity-45">Formatos de imagen válidos PNG, JPG, GIF</span>
-                          <input 
-                            type="file" 
-                            ref={fileInputRef} 
-                            onChange={handleLogoUpload} 
-                            accept="image/*" 
-                            className="hidden" 
-                          />
-                        </div>
-                      </div>
-                      
-                      <div className="w-full h-24 rounded-xl border border-white/10 flex items-center justify-center bg-black/30 overflow-hidden relative group">
-                        {regLogo ? (
-                          <>
-                            <img src={regLogo} alt="Preview" className="w-full h-full object-cover" />
-                            <button 
-                              type="button" 
-                              onClick={() => setRegLogo('')}
-                              className="absolute inset-0 bg-black/70 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-red-400 text-[10px] uppercase font-bold cursor-pointer"
-                            >
-                              Eliminar
-                            </button>
-                          </>
-                        ) : (
-                          <div className="text-center opacity-40 p-2">
-                            <ImagePlus className="w-6 h-6 mx-auto mb-1" />
-                            <span className="text-[9px] uppercase tracking-wider block">Sin Imagen de Portada</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* MISSION AND VISION EDITORS */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>
-                      <label className="block text-xs uppercase tracking-widest opacity-60 mb-2 font-bold text-brand-2">Misión de la Iglesia</label>
+                      <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">Misión de la Iglesia</label>
                       <textarea 
                         rows={3}
                         value={regMission}
                         onChange={(e) => setRegMission(e.target.value)}
-                        className="w-full bg-black/40 border border-white/20 rounded-xl py-3 px-4 text-xs focus:outline-none focus:border-brand-2 text-white resize-none font-sans" 
-                        placeholder="Describe el llamado de fe o propósito central. Ej: Propagar el evangelio sirviendo comunitariamente..."
+                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400/50 resize-none font-sans" 
+                        placeholder="Describe el llamado de fe o propósito central..."
                       />
                     </div>
                     <div>
-                      <label className="block text-xs uppercase tracking-widest opacity-60 mb-2 font-bold text-brand-1">Visión de la Iglesia</label>
+                      <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">Visión de la Iglesia</label>
                       <textarea 
                         rows={3}
                         value={regVision}
                         onChange={(e) => setRegVision(e.target.value)}
-                        className="w-full bg-black/40 border border-white/20 rounded-xl py-3 px-4 text-xs focus:outline-none focus:border-brand-2 text-white resize-none font-sans" 
-                        placeholder="Ej: Ser un centro de avivamiento global sustentado en redes de amor y discipulado congregacional..."
+                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400/50 resize-none font-sans" 
+                        placeholder="Visualización a futuro..."
                       />
                     </div>
                   </div>
 
-                  <button type="submit" className="w-full bg-brand-2 hover:bg-brand-3 text-stone-900 py-3.5 rounded-full text-xs uppercase tracking-widest font-bold transition-all cursor-pointer shadow-lg shadow-brand-2/15">
-                    Registrar e Integrar en Mapa de Believe
+                  <button type="submit" className="w-full bg-secondary hover:bg-sky-500 text-white py-4 rounded-xl font-semibold transition-all shadow-md">
+                    Registrar e Integrar en Directorio
                   </button>
                 </form>
               </div>
@@ -1229,76 +1189,70 @@ export function SuperAdminDashboard() {
         </AnimatePresence>
 
         {/* Real Dynamic Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
-           <div className="glass-panel p-6 rounded-2xl border border-theme-border">
-             <h4 className="text-xs uppercase tracking-widest opacity-60 mb-2 font-sans text-brand-1">Iglesias Totales</h4>
-             <div className="text-3xl font-serif text-brand-4 font-bold">{totalChurchesCount}</div>
-             <p className="text-[10px] text-brand-5 mt-2">Sincronizadas en DB</p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+           <div className="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm relative overflow-hidden group">
+             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-2xl -mr-10 -mt-10 group-hover:bg-primary/20 transition-all"></div>
+             <h4 className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-3 uppercase tracking-wide">Comunidades Activas</h4>
+             <div className="text-4xl font-serif text-slate-900 dark:text-white font-black">{totalChurchesCount}</div>
+             <p className="text-xs text-primary font-medium mt-3 flex items-center gap-2"><Globe className="w-3 h-3" /> Registradas</p>
            </div>
-           <div className="glass-panel p-6 rounded-2xl border border-theme-border">
-             <h4 className="text-xs uppercase tracking-widest opacity-60 mb-2 font-sans text-brand-1">Usuarios Globales</h4>
-             <div className="text-2xl md:text-3xl font-serif text-brand-3 font-bold">{usersCount}</div>
+           <div className="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm relative overflow-hidden group">
+             <div className="absolute top-0 right-0 w-32 h-32 bg-sky-400/5 rounded-full blur-2xl -mr-10 -mt-10 group-hover:bg-sky-400/20 transition-all"></div>
+             <h4 className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-3 uppercase tracking-wide">Usuarios Creyentes</h4>
+             <div className="text-4xl font-serif text-slate-900 dark:text-white font-black">{usersCount}</div>
+             <p className="text-xs text-secondary font-medium mt-3 flex items-center gap-2"><Users className="w-3 h-3" /> Formando comunidad</p>
            </div>
-           <div className="glass-panel p-6 rounded-2xl border border-theme-border">
-             <h4 className="text-xs uppercase tracking-widest opacity-60 mb-2 font-sans text-brand-1">Peticiones App</h4>
-             <div className="text-3xl font-serif text-brand-2 font-bold">8,950</div>
-             <p className="text-[10px] text-brand-4 mt-2">Proceso automático</p>
-           </div>
-           <div className="glass-panel p-6 rounded-2xl border border-theme-border">
-             <h4 className="text-xs uppercase tracking-widest opacity-60 mb-2 font-sans text-brand-1">Recaudación / Suscripciones</h4>
-             <div className="text-2xl md:text-3xl font-serif text-brand-5 font-bold">${revenue}</div>
-             <p className="text-[10px] opacity-50 mt-2">Fondo global mensual</p>
+           <div className="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm relative overflow-hidden group">
+             <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full blur-2xl -mr-10 -mt-10 group-hover:bg-amber-500/20 transition-all"></div>
+             <h4 className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-3 uppercase tracking-wide">Vidas Impactadas (Interacciones)</h4>
+             <div className="text-4xl font-serif text-slate-900 dark:text-white font-black">{prayersCount}</div>
+             <p className="text-xs text-amber-500 font-medium mt-3 flex items-center gap-2"><Sparkles className="w-3 h-3" /> A través del feed</p>
            </div>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6 mb-8">
+        <div className="grid lg:grid-cols-3 gap-6 mb-8">
           {/* Incoming registration requests */}
-          <div className="glass-panel p-8 rounded-3xl border border-theme-border">
-            <h3 className="font-serif text-xl mb-6 text-brand-1 font-bold uppercase tracking-wide">Solicitudes Recibidas (Iglesias Pendientes)</h3>
+          <div className="lg:col-span-2 bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm">
+            <h3 className="font-serif text-xl mb-6 text-slate-800 dark:text-slate-100 font-bold tracking-tight">Solicitudes de Iglesias Pendientes</h3>
             
             {pendingChurches.length > 0 ? (
-              <div className="space-y-4 font-sans font-light text-sm">
+              <div className="space-y-4">
                 {pendingChurches.map((church) => (
-                  <div key={church.id} className="flex flex-col py-4 border-b border-white/5 last:border-0 gap-4">
-                    <div className="flex justify-between items-start gap-4">
-                      {church.logo && (
-                        <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 border border-white/10 hidden sm:block">
-                          <img src={church.logo} alt={church.name} className="w-full h-full object-cover" />
-                        </div>
-                      )}
+                  <div key={church.id} className="p-5 border border-slate-200 dark:border-slate-700/80 rounded-2xl bg-slate-50 dark:bg-slate-900/50 hover:border-primary/30 transition-colors">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
                       <div className="flex-1">
-                        <p className="font-bold text-belief-white font-serif text-lg">{church.name}</p>
-                        <p className="text-[11px] uppercase tracking-wider text-brand-2 mb-1">{church.pastors} • {church.loc}</p>
-                        <p className="text-xs opacity-60 mb-2">{church.email} • {church.address}</p>
+                        <p className="font-bold text-slate-900 dark:text-white font-serif text-lg">{church.name}</p>
+                        <p className="text-[11px] font-semibold text-primary mb-2 uppercase tracking-wide">{church.pastors} • {church.loc}</p>
+                        <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">{church.email} • {church.address}</p>
                         
                         {(church.mission || church.vision) && (
-                          <div className="bg-black/30 p-3 rounded-xl border border-white/5 space-y-2 mt-2">
+                          <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700/50 space-y-3 mt-2 shadow-sm">
                             {church.mission && (
                               <div>
-                                <p className="text-[9px] uppercase tracking-widest text-brand-3 font-bold mb-0.5">Misión</p>
-                                <p className="text-xs opacity-80 leading-relaxed italic">"{church.mission}"</p>
+                                <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1">Misión</p>
+                                <p className="text-xs text-slate-600 dark:text-slate-300 italic leading-relaxed text-balance">"{church.mission}"</p>
                               </div>
                             )}
                             {church.vision && (
                               <div>
-                                <p className="text-[9px] uppercase tracking-widest text-brand-4 font-bold mb-0.5">Visión</p>
-                                <p className="text-xs opacity-80 leading-relaxed italic">"{church.vision}"</p>
+                                <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1">Visión</p>
+                                <p className="text-xs text-slate-600 dark:text-slate-300 italic leading-relaxed text-balance">"{church.vision}"</p>
                               </div>
                             )}
                           </div>
                         )}
                       </div>
                       
-                      <div className="flex flex-col gap-2 shrink-0">
+                      <div className="flex flex-row sm:flex-col gap-3 w-full sm:w-auto shrink-0">
                         <button 
                           onClick={() => handleApprovePending(church)}
-                          className="px-4 py-2 bg-brand-5 hover:bg-brand-5/80 text-black rounded-xl text-xs font-bold transition-colors cursor-pointer w-full"
+                          className="flex-1 sm:flex-none px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-semibold transition-all shadow-sm flex items-center justify-center gap-2"
                         >
                           Aprobar
                         </button>
                         <button 
                           onClick={() => handleRejectPending(church.id, church.email)}
-                          className="px-4 py-2 bg-brand-1 hover:bg-brand-1/80 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer w-full"
+                          className="flex-1 sm:flex-none px-6 py-2.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg text-sm font-semibold transition-all shadow-sm"
                         >
                           Rechazar
                         </button>
@@ -1308,44 +1262,46 @@ export function SuperAdminDashboard() {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-6">
-                <Check className="w-8 h-8 text-brand-5 mx-auto mb-2" />
-                <p className="text-xs opacity-60">No hay solicitudes de iglesias pendientes en este momento.</p>
+              <div className="text-center py-10 px-4 border border-dashed border-slate-300 dark:border-slate-700 rounded-2xl bg-slate-50 dark:bg-slate-900/30">
+                <Check className="w-10 h-10 text-emerald-400 mx-auto mb-3" />
+                <p className="text-sm font-medium text-slate-600 dark:text-slate-400">No hay solicitudes nuevas en este momento.</p>
               </div>
             )}
           </div>
 
-          <div className="glass-panel p-8 rounded-3xl border border-theme-border">
-            <h3 className="font-serif text-xl mb-6 text-brand-1 font-bold uppercase tracking-wide">Operaciones de Servidor</h3>
-            <div className="space-y-4 font-sans font-light text-sm">
-               <div className="flex items-center gap-3 py-3 border-b border-white/5">
-                 <div className="w-2 h-2 rounded-full bg-brand-5 animate-pulse"></div>
-                 <span>Servidor central Believe operando a tasa óptima (0.0.0.0:3000).</span>
+          <div className="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm h-fit">
+            <h3 className="font-serif text-xl mb-6 text-slate-800 dark:text-slate-100 font-bold tracking-tight">Operaciones</h3>
+            <div className="space-y-4">
+               <div className="flex items-center gap-4 py-4 border-b border-slate-100 dark:border-slate-700/50">
+                 <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse ring-4 ring-emerald-500/20"></div>
+                 <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Sistema Global Activo</span>
                </div>
-               <div className="flex items-center gap-3 py-3">
-                 <div className="w-2 h-2 rounded-full bg-brand-3"></div>
-                 <span>Respaldos automáticos ejecutándose de forma ininterrumpida.</span>
+               <div className="flex items-center gap-4 py-4">
+                 <div className="w-2.5 h-2.5 rounded-full bg-primary/80 ring-4 ring-primary/20"></div>
+                 <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Respaldos Sincronizados</span>
                </div>
             </div>
           </div>
         </div>
 
         {/* List of currently registered churches, allowing management */}
-        <div className="glass-panel p-8 rounded-3xl border border-theme-border">
-          <h3 className="font-serif text-xl mb-6 text-brand-3 font-bold uppercase tracking-wide">Iglesias Registradas Activas e Integradas</h3>
+        <div className="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm">
+          <h3 className="font-serif text-xl mb-6 text-slate-800 dark:text-slate-100 font-bold tracking-tight">Directorio Activo Integrado</h3>
           {registeredChurchesList.length > 0 ? (
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {registeredChurchesList.map((ch) => (
-                <div key={ch.id} className="p-4 bg-white/5 border border-white/10 rounded-2xl flex justify-between items-center">
+                <div key={ch.id} className="p-5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700/80 rounded-2xl flex justify-between items-start group hover:border-primary/30 transition-colors">
                   <div>
-                    <h5 className="font-bold text-sm text-belief-white">{ch.name}</h5>
-                    <p className="text-xs opacity-60 flex items-center gap-1"><MapPin className="w-3 h-3" /> {ch.loc} • {ch.address}</p>
-                    <p className="text-[10px] opacity-40 mt-1">{ch.members} miembros</p>
+                    <h5 className="font-bold text-base text-slate-900 dark:text-white mb-2">{ch.name}</h5>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 mb-2"><MapPin className="w-3.5 h-3.5" /> {ch.loc}</p>
+                    <div className="inline-flex items-center gap-1.5 bg-blue-50 dark:bg-blue-500/10 text-primary px-2.5 py-1 rounded-md text-[11px] font-semibold">
+                      <Users className="w-3.5 h-3.5" /> {ch.members} miembros
+                    </div>
                   </div>
                   <button 
                     onClick={() => handleDeleteChurch(ch.id)}
-                    className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl transition-colors cursor-pointer"
-                    title="Eliminar del mapa y registro"
+                    className="p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-red-500 hover:text-red-500 text-slate-400 rounded-xl transition-all shadow-sm cursor-pointer opacity-0 group-hover:opacity-100"
+                    title="Dar de baja comunidad"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -1353,9 +1309,9 @@ export function SuperAdminDashboard() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-6 text-zinc-500">
-              <MapPin className="w-8 h-8 text-brand-1/40 mx-auto mb-2" />
-              <p className="text-xs">Aún no hay iglesias registradas en la plataforma.</p>
+            <div className="text-center py-10 px-4 border border-dashed border-slate-300 dark:border-slate-700 rounded-2xl bg-slate-50 dark:bg-slate-900/30">
+              <MapPin className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Aún no hay iglesias registradas en el ecosistema.</p>
             </div>
           )}
         </div>
